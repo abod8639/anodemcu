@@ -195,18 +195,18 @@ function browse_custom_path() {
         
         # Use fd if available for faster directory listing, otherwise use find
         if command -v fd &> /dev/null; then
-            selected_dir=$(fd . "$start_dir" --type d --max-depth 5 --hidden --exclude .git | \
+            selected_dir=$(fd -H -t f -d 5 --exclude .git "platformio.ini|CMakeLists.txt|\.ino$" "$start_dir" | while read -r file; do dirname "$file"; done | sort -u | \
                 fzf --reverse \
                     --prompt="Select project directory > " \
-                    --header="Browse directories (type to filter, Enter to select)" \
+                    --header="Browse project directories (type to filter, Enter to select)" \
                     --preview='ls -lah {} 2>/dev/null | head -20' \
                     --preview-window=right:50%:wrap \
                     --height=80%)
         else
-            selected_dir=$(find "$start_dir" -maxdepth 5 -type d ! -path "*/\.*" 2>/dev/null | \
+            selected_dir=$(find "$start_dir" -maxdepth 5 -type f \( -name "platformio.ini" -o -name "CMakeLists.txt" -o -name "*.ino" \) ! -path "*/\.*" 2>/dev/null | while read -r file; do dirname "$file"; done | sort -u | \
                 fzf --reverse \
                     --prompt="Select project directory > " \
-                    --header="Browse directories (type to filter, Enter to select)" \
+                    --header="Browse project directories (type to filter, Enter to select)" \
                     --preview='ls -lah {} 2>/dev/null | head -20' \
                     --preview-window=right:50%:wrap \
                     --height=80%)
