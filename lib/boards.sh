@@ -85,8 +85,15 @@ function select_board() {
     ptype=$(detect_project_type "$PROJECT")
 
     if [[ "$ptype" == "espidf" ]]; then
-        echo -e "${C_GREEN}==> Select ESP-IDF Target:${C_RESET}"
-        read -rp "Enter target (e.g., esp32, esp32s2, esp32s3, esp32c3): " target
+        local targets=("esp32" "esp32s2" "esp32s3" "esp32c2" "esp32c3" "esp32c5" "esp32c6" "esp32h2" "esp32p4")
+        local target
+        if command -v fzf &> /dev/null; then
+            target=$(printf "%s\n" "${targets[@]}" | fzf --reverse --prompt="Select ESP-IDF Target: " --height=40%)
+        else
+            echo -e "${C_GREEN}==> Select ESP-IDF Target:${C_RESET}"
+            read -rp "Enter target (e.g., esp32, esp32s2, esp32s3, esp32c3): " target
+        fi
+
         if [[ -n "$target" ]]; then
             (cd "$PROJECT" && run_idf_command set-target "$target")
             echo -e "${C_GREEN}Target set to ${C_YELLOW}$target${C_RESET}"
@@ -94,8 +101,33 @@ function select_board() {
         fi
         return
     elif [[ "$ptype" == "platformio" ]]; then
-        echo -e "${C_GREEN}==> Select PlatformIO Board:${C_RESET}"
-        read -rp "Enter Board ID (e.g., esp32dev, uno): " board_id
+        local common_boards=(
+            "esp32dev (Espressif ESP32 Dev Module)"
+            "esp32-s3-devkitc-1 (Espressif ESP32-S3 Dev Kit)"
+            "esp32-c3-devkitm-1 (Espressif ESP32-C3 Dev Kit)"
+            "uno (Arduino Uno)"
+            "nanoatmega328 (Arduino Nano ATmega328)"
+            "megaatmega2560 (Arduino Mega 2560)"
+            "nodemcuv2 (NodeMCU 1.0 ESP-12E)"
+            "d1_mini (WEMOS D1 R2 & mini)"
+            "bluepill_f103c8 (Generic STM32F103C8)"
+            "--- ENTER CUSTOM BOARD ID ---"
+        )
+        local choice
+        local board_id
+        
+        if command -v fzf &> /dev/null; then
+            choice=$(printf "%s\n" "${common_boards[@]}" | fzf --reverse --prompt="Select PlatformIO Board: " --height=50%)
+            if [[ "$choice" == "--- ENTER CUSTOM BOARD ID ---" ]]; then
+                read -rp "Enter Board ID (e.g. esp32dev): " board_id
+            elif [[ -n "$choice" ]]; then
+                board_id=$(echo "$choice" | awk '{print $1}')
+            fi
+        else
+            echo -e "${C_GREEN}==> Select PlatformIO Board:${C_RESET}"
+            read -rp "Enter Board ID (e.g., esp32dev, uno): " board_id
+        fi
+
         if [[ -n "$board_id" ]]; then
             if sed -i "s/^board *=.*/board = $board_id/" "$PROJECT/platformio.ini"; then
                 echo -e "${C_GREEN}Board updated to ${C_YELLOW}$board_id${C_RESET} in platformio.ini"
