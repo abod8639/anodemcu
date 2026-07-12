@@ -1,30 +1,22 @@
 # Maintainer: abod8639 <https://github.com/abod8639>
 
-_pkgname=anodemcu
-pkgname=${_pkgname}-git
-pkgver=v2.0.0.r4.718d108
+pkgname=anodemcu
+pkgver=3.0.0
 pkgrel=1
 pkgdesc="A powerful interactive shell script to manage MCU projects (Arduino, ESP-IDF, PlatformIO)"
 arch=('any')
-url="https://github.com/abod8639/${_pkgname}"
+url="https://github.com/abod8639/${pkgname}"
 license=('MIT')
 depends=('arduino-cli' 'fzf' 'jq' 'neovim')
 optdepends=()
-provides=("${_pkgname}")
-conflicts=("${_pkgname}")
-source=("${_pkgname}::git+https://github.com/abod8639/${_pkgname}.git")
+source=("https://github.com/abod8639/${pkgname}/archive/refs/tags/v\${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
-pkgver() {
-  cd "$srcdir/${pkgname%-git}"
-  git describe --long --tags | sed 's/\([^-]*-\)g/r\1/;s/-/./g'
-}
-
 package() {
-  cd "${srcdir}/${_pkgname}"
+  cd "${srcdir}/${pkgname}-${pkgver}"
   
   # Define destination directory
-  local _dest="${pkgdir}/usr/share/${_pkgname}"
+  local _dest="${pkgdir}/usr/share/${pkgname}"
   install -d "${_dest}"
   
   # Install library files
@@ -35,9 +27,9 @@ package() {
   
   # Create a symlink in /usr/bin for global access
   install -d "${pkgdir}/usr/bin"
-  ln -s "/usr/share/${_pkgname}/anodemcu" "${pkgdir}/usr/bin/${_pkgname}"
+  ln -s "/usr/share/${pkgname}/anodemcu" "${pkgdir}/usr/bin/${pkgname}"
   
   # Install documentation and license
-  install -Dm644 "README.md" "${pkgdir}/usr/share/doc/${_pkgname}/README.md"
-  install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${_pkgname}/LICENSE"
+  install -Dm644 "README.md" "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
