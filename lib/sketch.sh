@@ -10,13 +10,27 @@ function compile_sketch() {
         sleep 1
         return 1
     fi
-    echo -e "${C_GREEN}==> Compiling sketch '${PROJECT##*/}'...${C_RESET}"
-    if ! arduino-cli compile --fqbn "${FQBN:-$DEFAULT_FQBN}" "$PROJECT"; then
+    echo -e "${C_GREEN}==> Compiling project '${PROJECT##*/}'...${C_RESET}"
+    
+    local ptype
+    ptype=$(detect_project_type "$PROJECT")
+    
+    local success=false
+    if [[ "$ptype" == "espidf" ]]; then
+        if (cd "$PROJECT" && run_idf_command build); then success=true; fi
+    elif [[ "$ptype" == "platformio" ]]; then
+        if (cd "$PROJECT" && pio run); then success=true; fi
+    else
+        # default to arduino
+        if arduino-cli compile --fqbn "${FQBN:-$DEFAULT_FQBN}" "$PROJECT"; then success=true; fi
+    fi
+    
+    if [[ "$success" == false ]]; then
         echo -e "${C_RED}Error: Compilation failed for '${PROJECT##*/}'. Please check the output above for details.${C_RESET}"
         press_enter_to_continue 
         return 
     fi
-    echo -e "${C_GREEN}Sketch '${PROJECT##*/}' compiled successfully.${C_RESET}"
+    echo -e "${C_GREEN}Project '${PROJECT##*/}' compiled successfully.${C_RESET}"
     press_enter_to_continue
 }
 
@@ -51,8 +65,20 @@ function upload_sketch() {
         echo -e "${C_GREEN}Using FQBN: ${C_YELLOW}${upload_fqbn}${C_RESET}"
 
         # Compile first for OTA, directing output to a 'build' folder
-        echo -e "${C_GREEN}==> Compiling sketch '${project_to_upload##*/}' for OTA...${C_RESET}"
-        if ! arduino-cli compile --fqbn "$upload_fqbn" --output-dir "$project_to_upload/build" "$project_to_upload"; then
+        local ptype
+        ptype=$(detect_project_type "$project_to_upload")
+        
+        echo -e "${C_GREEN}==> Compiling project '${project_to_upload##*/}' for OTA...${C_RESET}"
+        local success=false
+        if [[ "$ptype" == "espidf" ]]; then
+            if (cd "$project_to_upload" && run_idf_command build); then success=true; fi
+        elif [[ "$ptype" == "platformio" ]]; then
+            if (cd "$project_to_upload" && pio run); then success=true; fi
+        else
+            if arduino-cli compile --fqbn "$upload_fqbn" --output-dir "$project_to_upload/build" "$project_to_upload"; then success=true; fi
+        fi
+        
+        if [[ "$success" == false ]]; then
             echo -e "${C_RED}Error: Compilation failed. Please check the output above.${C_RESET}"
             press_enter_to_continue
             return
@@ -60,7 +86,17 @@ function upload_sketch() {
 
         # Perform OTA upload using the compiled artifacts
         echo -e "${C_GREEN}==> Performing OTA upload to ${C_YELLOW}${upload_port}${C_RESET}...${C_RESET}"
-        if ! arduino-cli upload --fqbn "$upload_fqbn" -p "$upload_port" "$project_to_upload" -v --input-dir "$project_to_upload/build"; then
+        success=false
+        if [[ "$ptype" == "espidf" ]]; then
+            echo -e "${C_YELLOW}Note: ESP-IDF OTA might require custom espota.py integration.${C_RESET}"
+            if (cd "$project_to_upload" && run_idf_command -p "$upload_port" flash); then success=true; fi
+        elif [[ "$ptype" == "platformio" ]]; then
+            if (cd "$project_to_upload" && pio run -t upload --upload-port "$upload_port"); then success=true; fi
+        else
+            if arduino-cli upload --fqbn "$upload_fqbn" -p "$upload_port" "$project_to_upload" -v --input-dir "$project_to_upload/build"; then success=true; fi
+        fi
+        
+        if [[ "$success" == false ]]; then
             echo -e "${C_RED}Error: OTA upload failed. Please check the output above.${C_RESET}"
             echo -e "${C_YELLOW}Make sure the device is powered on and connected to the network.${C_RESET}"
             echo -e "${C_YELLOW}Also verify that OTA is enabled in your sketch.${C_RESET}"
@@ -127,7 +163,20 @@ function upload_sketch() {
         
         # For regular upload, compile and upload in one step
         echo -e "${C_GREEN}==> Compiling and uploading to port ${C_YELLOW}${upload_port}${C_RESET}...${C_RESET}"
-        if ! arduino-cli upload --fqbn "$upload_fqbn" -p "$upload_port" "$project_to_upload" -v; then
+        
+        local ptype
+        ptype=$(detect_project_type "$project_to_upload")
+        local success=false
+        
+        if [[ "$ptype" == "espidf" ]]; then
+            if (cd "$project_to_upload" && run_idf_command -p "$upload_port" flash); then success=true; fi
+        elif [[ "$ptype" == "platformio" ]]; then
+            if (cd "$project_to_upload" && pio run -t upload --upload-port "$upload_port"); then success=true; fi
+        else
+            if arduino-cli upload --fqbn "$upload_fqbn" -p "$upload_port" "$project_to_upload" -v; then success=true; fi
+        fi
+        
+        if [[ "$success" == false ]]; then
             echo -e "${C_RED}Error: Upload failed. Please check the output above.${C_RESET}"
             press_enter_to_continue
             return
