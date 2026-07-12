@@ -199,7 +199,20 @@ function browse_custom_path() {
                 fzf --reverse \
                     --prompt="Select project directory > " \
                     --header="Browse project directories (type to filter, Enter to select)" \
-                    --preview='ls -lah {} 2>/dev/null | head -20' \
+                    --preview='bash -c '\''
+                        dir="$1"
+                        printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
+                        if [ -f "$dir/platformio.ini" ]; then
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q -i "project(" "$dir/CMakeLists.txt" 2>/dev/null; then
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        else
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
+                        fi
+                        printf "  \033[38;2;180;190;254mPath:\033[0m %s\n" "$dir"
+                        printf "\033[38;2;203;166;247m── CONTENTS ────────────────────────────\033[0m\n"
+                        ls -lah "$dir" 2>/dev/null | head -15
+                    '\'' -- {}' \
                     --preview-window=right:50%:wrap \
                     --height=80%)
         else
@@ -207,7 +220,20 @@ function browse_custom_path() {
                 fzf --reverse \
                     --prompt="Select project directory > " \
                     --header="Browse project directories (type to filter, Enter to select)" \
-                    --preview='ls -lah {} 2>/dev/null | head -20' \
+                    --preview='bash -c '\''
+                        dir="$1"
+                        printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
+                        if [ -f "$dir/platformio.ini" ]; then
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q -i "project(" "$dir/CMakeLists.txt" 2>/dev/null; then
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        else
+                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
+                        fi
+                        printf "  \033[38;2;180;190;254mPath:\033[0m %s\n" "$dir"
+                        printf "\033[38;2;203;166;247m── CONTENTS ────────────────────────────\033[0m\n"
+                        ls -lah "$dir" 2>/dev/null | head -15
+                    '\'' -- {}' \
                     --preview-window=right:50%:wrap \
                     --height=80%)
         fi
