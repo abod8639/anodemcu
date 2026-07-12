@@ -87,6 +87,7 @@ function _create_new_project_prompt() {
 function select_or_create_project() {
     print_header
 
+    if command -v fzf &> /dev/null; then 
         # Load history
         local history_paths=""
         if [[ -f "$HISTORY_FILE" ]]; then
