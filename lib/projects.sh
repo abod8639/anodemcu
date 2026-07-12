@@ -3,6 +3,43 @@
 # Arduino CLI Manager - Projects Module
 # This file contains project management functions
 
+function add_to_history() {
+    local path="$1"
+    if [[ -z "$path" || "$path" == "$DEFAULT_PROJECT" || ! -d "$path" ]]; then
+        return
+    fi
+
+    # Check if the project is supported (not unknown)
+    local ptype
+    ptype=$(detect_project_type "$path")
+    if [[ "$ptype" == "unknown" ]]; then
+        return
+    fi
+
+    # Normalize path
+    path=$(realpath "$path")
+
+    # Create temporary file
+    local temp_file
+    temp_file=$(mktemp)
+
+    # Put new path at top
+    echo "$path" > "$temp_file"
+
+    # Append existing history, filtering out duplicates and keeping only directories that still exist
+    if [[ -f "$HISTORY_FILE" ]]; then
+        while IFS= read -r line; do
+            if [[ -d "$line" && "$line" != "$path" ]]; then
+                echo "$line" >> "$temp_file"
+            fi
+        done < "$HISTORY_FILE"
+    fi
+
+    # Keep only top 10 items
+    head -n 10 "$temp_file" > "$HISTORY_FILE"
+    rm -f "$temp_file"
+}
+
 function _create_new_project_prompt() {
     print_header
     echo -e "${C_GREEN}==> Select Platform:${C_RESET}"
@@ -44,6 +81,7 @@ function _create_new_project_prompt() {
             PROJECT="$target_dir"
             ;;
     esac
+    add_to_history "$PROJECT"
 }
 
 function select_or_create_project() {
