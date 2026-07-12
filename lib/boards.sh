@@ -81,6 +81,32 @@ function _select_board_menu() {
 
 function select_board() {
     print_header
+    local ptype
+    ptype=$(detect_project_type "$PROJECT")
+
+    if [[ "$ptype" == "espidf" ]]; then
+        echo -e "${C_GREEN}==> Select ESP-IDF Target:${C_RESET}"
+        read -rp "Enter target (e.g., esp32, esp32s2, esp32s3, esp32c3): " target
+        if [[ -n "$target" ]]; then
+            (cd "$PROJECT" && run_idf_command set-target "$target")
+            echo -e "${C_GREEN}Target set to ${C_YELLOW}$target${C_RESET}"
+            press_enter_to_continue
+        fi
+        return
+    elif [[ "$ptype" == "platformio" ]]; then
+        echo -e "${C_GREEN}==> Select PlatformIO Board:${C_RESET}"
+        read -rp "Enter Board ID (e.g., esp32dev, uno): " board_id
+        if [[ -n "$board_id" ]]; then
+            if sed -i "s/^board *=.*/board = $board_id/" "$PROJECT/platformio.ini"; then
+                echo -e "${C_GREEN}Board updated to ${C_YELLOW}$board_id${C_RESET} in platformio.ini"
+            else
+                echo -e "${C_RED}Failed to update platformio.ini${C_RESET}"
+            fi
+            press_enter_to_continue
+        fi
+        return
+    fi
+
     # Check if fzf is installed for a better experience
     if command -v fzf &> /dev/null; then
         _select_board_fzf
