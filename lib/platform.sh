@@ -12,9 +12,9 @@ function detect_project_type() {
     fi
 
     # 1. Check if project-specific type config exists
-    if [[ -f "$proj_dir/.arduino-cli-manager.type" ]]; then
+    if [[ -f "$proj_dir/.anodemcu.type" ]]; then
         local saved_type
-        saved_type=$(cat "$proj_dir/.arduino-cli-manager.type" 2>/dev/null | tr -d '[:space:]')
+        saved_type=$(cat "$proj_dir/.anodemcu.type" 2>/dev/null | tr -d '[:space:]')
         if [[ "$saved_type" == "espidf" || "$saved_type" == "platformio" || "$saved_type" == "arduino" ]]; then
             echo "$saved_type"
             return
@@ -64,7 +64,7 @@ function resolve_project_type_ambiguity() {
 
     if [[ -f "$proj_dir/platformio.ini" && -f "$proj_dir/CMakeLists.txt" ]] && grep -q -i "project(" "$proj_dir/CMakeLists.txt"; then
         # If the file already exists, don't prompt
-        if [[ -f "$proj_dir/.arduino-cli-manager.type" ]]; then
+        if [[ -f "$proj_dir/.anodemcu.type" ]]; then
             return
         fi
         
@@ -76,9 +76,9 @@ function resolve_project_type_ambiguity() {
         read -rp "Choice [1/2]: " choice
         
         if [[ "$choice" == "2" ]]; then
-            echo "platformio" > "$proj_dir/.arduino-cli-manager.type"
+            echo "platformio" > "$proj_dir/.anodemcu.type"
         else
-            echo "espidf" > "$proj_dir/.arduino-cli-manager.type"
+            echo "espidf" > "$proj_dir/.anodemcu.type"
         fi
     fi
 }

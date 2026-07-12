@@ -1,20 +1,20 @@
-# Arduino CLI Manager
+# Anode MCU Manager
 
 <p align="center">
-  <img src="assets/1.png" width="350" alt="Arduino CLI Manager Preview" />
+  <img src="assets/1.png" width="350" alt="Anode MCU Manager Preview" />
 </p>
 
 <p align="center">
-  <a href="https://aur.archlinux.org/packages/arduino-cli-manager-git"><img src="https://img.shields.io/badge/AUR-arduino--cli--manager--git-blue?logo=arch-linux" alt="AUR Package"></a>
+  <a href="https://aur.archlinux.org/packages/anodemcu-git"><img src="https://img.shields.io/badge/AUR-anodemcu--git-blue?logo=arch-linux" alt="AUR Package"></a>
   <img src="https://img.shields.io/badge/Shell-Bash-blue.svg?logo=gnu-bash&logoColor=white" alt="Bash">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
-  <img src="https://img.shields.io/github/v/release/abod8639/arduino-cli-manager?color=orange" alt="Release">
-  <img src="https://img.shields.io/github/stars/abod8639/arduino-cli-manager?style=flat&color=gold" alt="Stars">
+  <img src="https://img.shields.io/github/v/release/abod8639/anodemcu?color=orange" alt="Release">
+  <img src="https://img.shields.io/github/stars/abod8639/anodemcu?style=flat&color=gold" alt="Stars">
 </p>
 
 ---
 
-`arduino-cli-manager` is a **premium, interactive TUI (Terminal User Interface)** designed to simplify microcontroller development. It transforms the command-line tools into a vibrant, intuitive experience, allowing you to manage boards, ports, libraries, and projects across multiple ecosystems.
+`anodemcu` is a **premium, interactive TUI (Terminal User Interface)** designed to simplify microcontroller development. It transforms the command-line tools into a vibrant, intuitive experience, allowing you to manage boards, ports, libraries, and projects across multiple ecosystems.
 
 > [!TIP]
 > **Perfect for developers** who live in the terminal and want a high-speed, "no-nonsense" workflow for compiling and uploading code.
@@ -39,23 +39,23 @@
 ### Arch Linux (AUR)
 If you are on Arch, this is the recommended way:
 ```bash
-yay -S arduino-cli-manager-git
+yay -S anodemcu-git
 ```
 
 ### Global Installation (Any Linux/macOS)
 Clone the repository and run the automated installer:
 ```bash
-git clone https://github.com/abod8639/arduino-cli-manager.git
-cd arduino-cli-manager
+git clone https://github.com/abod8639/anodemcu.git
+cd anodemcu
 ./install.sh
 ```
-*This will install the tool to `~/.local/bin/arduino-manager` and set up a convenient `acm` alias.*
+*This will install the tool to `~/.local/bin/anodemcu` and set up a convenient `anode` alias.*
 
 ### Manual Install
 ```bash
-chmod +x arduino-cli-manager.sh
+chmod +x anodemcu
 # Run locally
-./arduino-cli-manager.sh
+./anodemcu
 ```
 
 ---
@@ -94,7 +94,7 @@ sudo dnf install arduino-cli fzf jq neovim
 
 ## How to Use
 
-Simply type `acm` (if installed globally) or `./arduino-cli-manager.sh` to open the main menu.
+Simply type `anode` (if installed globally) or `./anodemcu` to open the main menu.
 
 ### Keyboard Shortcuts & Platform-Specific Actions
 Use these single-key triggers for a lightning-fast workflow:

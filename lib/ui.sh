@@ -6,13 +6,13 @@
 # --- UI Functions ---
 
 function print_logo() {
-                 echo "                                                          "
-     echo -e "${C_LOGO}  ██████╗  █████╗ ██████╗  ██╗   ██╗██╗███╗   ██╗ ██████╗ "
-                 echo "  ██╔══██╗██╔══██╗██╔══██╗ ██║   ██║██║████╗  ██║██╔═══██╗"
-                 echo "  ██████╔╝███████║██║  ██║ ██║   ██║██║██╔██╗ ██║██║   ██║"
-                 echo "  ██╔══██║██╔══██║██║  ██║ ██║   ██║██║██║╚██╗██║██║   ██║"
-                 echo "  ██████╔╝██║  ██║██████╔╝ ╚██████╔╝██║██║ ╚████║╚██████╔╝"
-              echo -e "  ╚═════╝ ╚═╝  ╚═╝╚═════╝   ╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝ ${C_RESET}"
+    echo "                                                          "
+    echo -e "${C_LOGO}   █████╗  ███╗   ██╗ ██████╗ ██████╗ ███████╗"
+    echo "  ██╔══██╗ ████╗  ██║██╔═══██╗██╔══██╗██╔════╝"
+    echo "  ███████║ ██╔██╗ ██║██║   ██║██║  ██║█████╗  "
+    echo "  ██╔══██║ ██║╚██╗██║██║   ██║██╔══██╗██╔══╝  "
+    echo "  ██║  ██║ ██║ ╚████║╚██████╔╝██████╔╝███████╗"
+    echo -e "  ╚═╝  ╚═╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝${C_RESET}"
 }
 
 function print_header() {
@@ -67,9 +67,9 @@ function press_enter_to_continue() {
 
 function show_help() {
     print_header
-    echo -e "${C_GREEN}==> Arduino CLI Manager - Quick Help${C_RESET}"
+    echo -e "${C_GREEN}==> Anode MCU Manager - Quick Help${C_RESET}"
     echo ""
-    echo "This tool helps you manage Arduino projects easily."
+    echo "This tool helps you manage microcontroller projects easily."
     echo ""
     echo -e "${C_SHORTCUT}Getting Started:${C_RESET}"
     echo "  1. Select or create a project (S)"
@@ -92,7 +92,7 @@ function show_help() {
     echo "  ${C_SHORTCUT}Debug Output:${C_RESET} M (opens serial monitor)"
     echo ""
     echo -e "${C_SHORTCUT}Configuration:${C_RESET}"
-    echo "  Config file: ~/.arduino-cli-manager.conf"
+    echo "  Config file: ~/.anodemcu.conf"
     echo "  Projects directory: $SKETCH_DIR"
     echo ""
     press_enter_to_continue

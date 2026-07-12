@@ -8,7 +8,7 @@ function check_for_update() {
         return # Skip check if jq or curl is not available
     fi
 
-    local repo="abod8639/arduino-cli-manager"
+    local repo="abod8639/anodemcu"
     local response
 
     response=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
@@ -36,9 +36,9 @@ function update_script() {
         read -rp "Do you want to update now? [Y/n]: " update_choice
         if [[ -z "$update_choice" || "$update_choice" =~ ^[Yy]$ ]]; then
             echo -e "${C_GREEN}==> Updating script...${C_RESET}"
-            local repo="abod8639/arduino-cli-manager"
+            local repo="abod8639/anodemcu"
             # Use $0 to refer to the script itself, making it self-updating
-            if curl -sL "https://raw.githubusercontent.com/$repo/main/arduino-cli-manager.sh" -o "$0" && chmod +x "$0"; then
+            if curl -sL "https://raw.githubusercontent.com/$repo/main/anodemcu" -o "$0" && chmod +x "$0"; then
                 echo -e "${C_GREEN}Update successful! Please restart the script to use the new version.${C_RESET}"
                 exit 0
             else

@@ -9,10 +9,10 @@ export PROJECT_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 # Create temporary test directory
 export TEST_TEMP_DIR="$(mktemp -d)"
 export SKETCH_DIR="$TEST_TEMP_DIR/Arduino"
-export CONFIG_FILE="$TEST_TEMP_DIR/.arduino-cli-manager.conf"
+export CONFIG_FILE="$TEST_TEMP_DIR/.anodemcu.conf"
 export BACKUP_DIR="$TEST_TEMP_DIR/backups"
 export LOG_DIR="$TEST_TEMP_DIR/logs"
-export LOG_FILE="$LOG_DIR/arduino-manager.log"
+export LOG_FILE="$LOG_DIR/anodemcu.log"
 
 # Create test directories
 mkdir -p "$SKETCH_DIR"

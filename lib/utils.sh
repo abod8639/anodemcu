@@ -109,7 +109,7 @@ function check_for_update() {
         return # Skip check if jq or curl is not available
     fi
 
-    local repo="abod8639/arduino-cli-manager"
+    local repo="abod8639/anodemcu"
     local response
 
     response=$(curl -s "https://api.github.com/repos/$repo/releases/latest")

@@ -1,10 +1,10 @@
 # Maintainer: abod8639 <https://github.com/abod8639>
 
-_pkgname=arduino-cli-manager
+_pkgname=anodemcu
 pkgname=${_pkgname}-git
 pkgver=v2.0.0.r4.718d108
 pkgrel=1
-pkgdesc="A powerful interactive shell script to manage Arduino CLI projects"
+pkgdesc="A powerful interactive shell script to manage MCU projects (Arduino, ESP-IDF, PlatformIO)"
 arch=('any')
 url="https://github.com/abod8639/${_pkgname}"
 license=('MIT')
@@ -31,11 +31,11 @@ package() {
   cp -r lib/ "${_dest}/"
   
   # Install the main script
-  install -m755 "arduino-cli-manager.sh" "${_dest}/"
+  install -m755 "anodemcu" "${_dest}/"
   
   # Create a symlink in /usr/bin for global access
   install -d "${pkgdir}/usr/bin"
-  ln -s "/usr/share/${_pkgname}/arduino-cli-manager.sh" "${pkgdir}/usr/bin/${_pkgname}"
+  ln -s "/usr/share/${_pkgname}/anodemcu" "${pkgdir}/usr/bin/${_pkgname}"
   
   # Install documentation and license
   install -Dm644 "README.md" "${pkgdir}/usr/share/doc/${_pkgname}/README.md"

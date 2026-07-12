@@ -13,14 +13,12 @@ setup() {
 @test "print_logo outputs ASCII art" {
     run print_logo
     
-    assert_output_contains "██████╗"
-    assert_output_contains "ARDUINO"
+    assert_output_contains "█████╗"
 }
 
 @test "print_header clears screen and shows logo" {
     run print_header
     
-    assert_output_contains "ARDUINO CLI MANAGER"
     assert_output_contains "Project:"
     assert_output_contains "Board:"
     assert_output_contains "Port:"

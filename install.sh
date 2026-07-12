@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Arduino CLI Manager - Installation Script
+# Anode MCU Manager - Installation Script
 # Cross-platform installation for bash, zsh, macOS, and Linux
 
 set -e
@@ -12,7 +12,7 @@ C_CYAN='\033[0;36m'
 C_RED='\033[0;31m'
 C_RESET='\033[0m'
 
-echo -e "${C_GREEN}Arduino CLI Manager - Installation${C_RESET}"
+echo -e "${C_GREEN}Anode MCU Manager - Installation${C_RESET}"
 echo ""
 
 # Get script directory
@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Installation directory
 INSTALL_DIR="$HOME/.local/bin"
-INSTALL_NAME="arduino-manager"
+INSTALL_NAME="anodemcu"
 
 # Detect shell and RC file
 detect_shell() {
@@ -76,7 +76,7 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
         if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$RC_FILE" 2>/dev/null && \
            ! grep -q "export PATH=\"\$HOME/.local/bin:\$PATH\"" "$RC_FILE" 2>/dev/null; then
             echo '' >> "$RC_FILE"
-            echo '# Added by arduino-cli-manager installer' >> "$RC_FILE"
+            echo '# Added by anodemcu installer' >> "$RC_FILE"
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC_FILE"
             echo -e "${C_GREEN}✓ Added to $RC_FILE${C_RESET}"
             echo -e "Run: ${C_CYAN}source $RC_FILE${C_RESET}"
@@ -92,14 +92,14 @@ echo -e "${C_YELLOW}Creating wrapper script...${C_RESET}"
 cat > "$INSTALL_DIR/$INSTALL_NAME" << EOF
 #!/bin/bash
 
-# Arduino CLI Manager - Global Wrapper
-# This script allows running arduino-cli-manager from anywhere
+# Anode MCU Manager - Global Wrapper
+# This script allows running anodemcu from anywhere
 
 # Get the installation directory
 MANAGER_DIR="$SCRIPT_DIR"
 
 # Change to manager directory and run
-cd "\$MANAGER_DIR" && ./arduino-cli-manager.sh "\$@"
+cd "\$MANAGER_DIR" && ./anodemcu "\$@"
 EOF
 
 # Make executable
@@ -111,21 +111,21 @@ echo "You can now run the tool from anywhere using:"
 echo -e "${C_GREEN}  $INSTALL_NAME${C_RESET}"
 echo ""
 echo "Or create an alias for quick access:"
-echo -e "${C_GREEN}  alias acm='$INSTALL_NAME'${C_RESET}"
+echo -e "${C_GREEN}  alias anode='$INSTALL_NAME'${C_RESET}"
 echo ""
 
 # Offer to create alias
-read -rp "Do you want to create the 'acm' alias now? [y/N]: " create_alias
+read -rp "Do you want to create the 'anode' alias now? [y/N]: " create_alias
 
 if [[ "$create_alias" =~ ^[Yy]$ ]]; then
-    if ! grep -q "alias acm=" "$RC_FILE" 2>/dev/null; then
+    if ! grep -q "alias anode=" "$RC_FILE" 2>/dev/null; then
         echo '' >> "$RC_FILE"
-        echo '# Arduino CLI Manager alias' >> "$RC_FILE"
-        echo "alias acm='$INSTALL_NAME'" >> "$RC_FILE"
-        echo -e "${C_GREEN}✓ Alias 'acm' added to $RC_FILE${C_RESET}"
+        echo '# Anode MCU Manager alias' >> "$RC_FILE"
+        echo "alias anode='$INSTALL_NAME'" >> "$RC_FILE"
+        echo -e "${C_GREEN}✓ Alias 'anode' added to $RC_FILE${C_RESET}"
         echo -e "Run: ${C_CYAN}source $RC_FILE${C_RESET}"
     else
-        echo -e "${C_YELLOW}Alias 'acm' already exists in $RC_FILE${C_RESET}"
+        echo -e "${C_YELLOW}Alias 'anode' already exists in $RC_FILE${C_RESET}"
     fi
 fi
 
@@ -136,5 +136,5 @@ echo -e "${C_GREEN}╚═══════════════════�
 echo ""
 echo "Next steps:"
 echo -e "1. ${C_CYAN}source $RC_FILE${C_RESET}  (to reload shell config)"
-echo -e "2. ${C_CYAN}$INSTALL_NAME${C_RESET} or ${C_CYAN}acm${C_RESET}  (to run the tool)"
+echo -e "2. ${C_CYAN}$INSTALL_NAME${C_RESET} or ${C_CYAN}anode${C_RESET}  (to run the tool)"
 echo ""

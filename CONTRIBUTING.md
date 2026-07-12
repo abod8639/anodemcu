@@ -147,8 +147,8 @@ Before submitting a pull request:
 ## Project Structure
 
 ```
-arduino-cli-manager/
-├── arduino-cli-manager.sh  # Main script
+anodemcu/
+├── anodemcu               # Main script
 ├── README.md               # English documentation
 ├── README_AR.md            # Arabic documentation
 ├── LICENSE                 # MIT License

@@ -37,7 +37,7 @@ setup() {
 
 @test "CONFIG_FILE path is set" {
     assert_var_set "CONFIG_FILE"
-    [[ "$CONFIG_FILE" == "$HOME/.arduino-cli-manager.conf" ]]
+    [[ "$CONFIG_FILE" == "$HOME/.anodemcu.conf" ]]
 }
 
 @test "BACKUP_DIR is set" {

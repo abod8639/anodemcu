@@ -10,11 +10,11 @@ C_YELLOW='\033[1;33m'
 C_RED='\033[0;31m'
 C_RESET='\033[0m'
 
-echo -e "${C_YELLOW}Arduino CLI Manager - Uninstallation${C_RESET}"
+echo -e "${C_YELLOW}Anode MCU Manager - Uninstallation${C_RESET}"
 echo ""
 
 INSTALL_DIR="$HOME/.local/bin"
-INSTALL_NAME="arduino-manager"
+INSTALL_NAME="anodemcu"
 
 if [ -f "$INSTALL_DIR/$INSTALL_NAME" ]; then
     rm "$INSTALL_DIR/$INSTALL_NAME"
@@ -25,6 +25,6 @@ fi
 
 echo ""
 echo "Note: You may want to remove the alias from ~/.bashrc manually:"
-echo "  alias acm='arduino-manager'"
+echo "  alias anode='anodemcu'"
 echo ""
 echo -e "${C_GREEN}Uninstallation complete!${C_RESET}"
