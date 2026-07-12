@@ -40,27 +40,27 @@ function main_menu() {
         ptype=$(detect_project_type "$PROJECT")
 
         print_header
-        echo -e " ${C_YELLOW}1 (S) S${C_RESET}elect/Create Project    "
-        echo -e " ${C_YELLOW}2 (B)${C_RESET} Select ${C_YELLOW}B${C_RESET}oard           "
-        echo -e " ${C_YELLOW}3 (P)${C_RESET} Select ${C_YELLOW}P${C_RESET}ort              "
-        echo -e " ${C_YELLOW}4 (C) C${C_RESET}ompile Project          "
-        echo -e " ${C_YELLOW}5 (U) U${C_RESET}pload Project           "
+        echo -e " ${C_LOGO}1 (S) ${C_SHORTCUT}S${C_RESET}elect/Create Project    "
+        echo -e " ${C_LOGO}2 (B)${C_RESET} Select ${C_SHORTCUT}B${C_RESET}oard           "
+        echo -e " ${C_LOGO}3 (P)${C_RESET} Select ${C_SHORTCUT}P${C_RESET}ort              "
+        echo -e " ${C_LOGO}4 (C) ${C_SHORTCUT}C${C_RESET}ompile Project          "
+        echo -e " ${C_LOGO}5 (U) ${C_SHORTCUT}U${C_RESET}pload Project           "
         
         if [[ "$ptype" == "espidf" ]]; then
-            echo -e " ${C_YELLOW}6 (F)${C_RESET} idf.py menucon${C_YELLOW}f${C_RESET}ig      "
-            echo -e " ${C_YELLOW}7 (N)${C_RESET} idf.py clea${C_YELLOW}n${C_RESET}           "
-            echo -e " ${C_YELLOW}8 (Z)${C_RESET} idf.py si${C_YELLOW}z${C_RESET}e             "
+            echo -e " ${C_LOGO}6 (F)${C_RESET} idf.py menucon${C_SHORTCUT}f${C_RESET}ig      "
+            echo -e " ${C_LOGO}7 (N)${C_RESET} idf.py clea${C_SHORTCUT}n${C_RESET}           "
+            echo -e " ${C_LOGO}8 (Z)${C_RESET} idf.py si${C_SHORTCUT}z${C_RESET}e             "
         elif [[ "$ptype" == "platformio" ]]; then
-            echo -e " ${C_YELLOW}6 (O)${C_RESET} pi${C_YELLOW}o${C_RESET} lib install          "
-            echo -e " ${C_YELLOW}7 (N)${C_RESET} pio clea${C_YELLOW}n${C_RESET}              "
+            echo -e " ${C_LOGO}6 (O)${C_RESET} pi${C_SHORTCUT}o${C_RESET} lib install          "
+            echo -e " ${C_LOGO}7 (N)${C_RESET} pio clea${C_SHORTCUT}n${C_RESET}              "
             echo -e "                         "
         else
-            echo -e " ${C_YELLOW}6 (L) L${C_RESET}ist Installed Cores     "
-            echo -e " ${C_YELLOW}7 (A)${C_RESET} List ${C_YELLOW}A${C_RESET}ll Supported Boards"
-            echo -e " ${C_YELLOW}8 (I) I${C_RESET}nstall Core             " 
+            echo -e " ${C_LOGO}6 (L) ${C_SHORTCUT}L${C_RESET}ist Installed Cores     "
+            echo -e " ${C_LOGO}7 (A)${C_RESET} List ${C_SHORTCUT}A${C_RESET}ll Supported Boards"
+            echo -e " ${C_LOGO}8 (I) ${C_SHORTCUT}I${C_RESET}nstall Core             " 
         fi 
-        echo -e " ${C_YELLOW}9 (M)${C_RESET} Open Serial ${C_YELLOW}M${C_RESET}onitor      "
-        echo -e " ${C_YELLOW}0 (E) E${C_RESET}dit Project (nvim)      "
+        echo -e " ${C_LOGO}9 (M)${C_RESET} Open Serial ${C_SHORTCUT}M${C_RESET}onitor      "
+        echo -e " ${C_LOGO}0 (E) ${C_SHORTCUT}E${C_RESET}dit Project (nvim)      "
         echo "────────────────────────────────────────────────────────────"
         echo -e " ${C_CYAN}(R)${C_RESET} Manage Libraries"
         echo -e " ${C_CYAN}(H)${C_RESET} Help"
