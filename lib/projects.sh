@@ -130,9 +130,28 @@ function select_or_create_project() {
 
         local choice
         choice=$(echo "$fzf_list" | \
-            fzf --reverse --prompt="Select or create a project: " \
-            --height=70% \
-            --header "Enter to select."
+            fzf --reverse --ansi \
+                --prompt="Select or create a project: " \
+                --height=70% \
+                --header "Enter to select." \
+                --preview='bash -c '"'"'
+                    dir="$1"
+                    if [[ "$dir" == ---* ]]; then exit 0; fi
+                    if [ -f "$dir/platformio.ini" ]; then
+                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                    elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
+                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                    elif [ -f "$dir/sdkconfig" ] || [ -f "$dir/sdkconfig.defaults" ] || [ -f "$dir/idf_component.yml" ]; then
+                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                    elif ls "$dir"/*.ino >/dev/null 2>&1; then
+                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
+                    else
+                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;249;226;175mUnknown\033[0m\n"
+                    fi
+                    printf "\033[38;2;203;166;247m── CONTENTS ──────────────────────────\033[0m\n"
+                    ls -lah "$dir" 2>/dev/null | head -15
+                '"'"' -- {}' \
+                --preview-window=right:45%:wrap
         )
 
         if [[ -z "$choice" || "$choice" == "--- RECENT PROJECTS ---" || "$choice" == "--- OTHER PROJECTS ---" ]]; then
@@ -193,62 +212,61 @@ function browse_custom_path() {
         local start_dir="${1:-$HOME}"
         local selected_dir
         
-        # Use fd if available for faster directory listing, otherwise use find
+        # Build the async scan command based on available tools.
+        # Regex matches ONLY: platformio.ini, CMakeLists.txt, *.ino, sdkconfig, sdkconfig.defaults, idf_component.yml
+        local _scan_cmd
         if command -v fd &> /dev/null; then
-            selected_dir=$(fd -H -t f -d 5 --exclude .git "platformio.ini|CMakeLists.txt|\.ino$" "$start_dir" | while read -r file; do
-                if [[ "$file" == */CMakeLists.txt ]]; then
-                    grep -q "project.cmake" "$file" 2>/dev/null && dirname "$file"
-                else
-                    dirname "$file"
-                fi
-            done | sort -u | \
-                fzf --reverse \
-                    --prompt="Select project directory > " \
-                    --header="Browse project directories (type to filter, Enter to select)" \
-                    --preview='bash -c '\''
-                        dir="$1"
-                        printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
-                        if [ -f "$dir/platformio.ini" ]; then
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
-                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
-                        else
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
-                        fi
-                        printf "  \033[38;2;180;190;254mPath:\033[0m %s\n" "$dir"
-                        printf "\033[38;2;203;166;247m── CONTENTS ────────────────────────────\033[0m\n"
-                        ls -lah "$dir" 2>/dev/null | head -15
-                    '\'' -- {}' \
-                    --preview-window=right:50%:wrap \
-                    --height=80%)
+            _scan_cmd="fd -H -t f -d 5 --exclude .git \
+'(platformio\\.ini|CMakeLists\\.txt|\\.ino|sdkconfig|sdkconfig\\.defaults|idf_component\\.yml)\$' \
+\"$start_dir\" | bash -c 'while IFS= read -r f; do
+    case \"\$f\" in
+        *platformio.ini)        dirname \"\$f\" ;;
+        *CMakeLists.txt)        grep -q \"project.cmake\" \"\$f\" 2>/dev/null && dirname \"\$f\" ;;
+        *sdkconfig|*sdkconfig.defaults|*idf_component.yml) dirname \"\$f\" ;;
+        *.ino)                  dirname \"\$f\" ;;
+    esac
+done' | sort -u"
         else
-            selected_dir=$(find "$start_dir" -maxdepth 5 -type f \( -name "platformio.ini" -o -name "CMakeLists.txt" -o -name "*.ino" \) ! -path "*/\.*" 2>/dev/null | while read -r file; do
-                if [[ "$file" == */CMakeLists.txt ]]; then
-                    grep -q "project.cmake" "$file" 2>/dev/null && dirname "$file"
-                else
-                    dirname "$file"
-                fi
-            done | sort -u | \
-                fzf --reverse \
-                    --prompt="Select project directory > " \
-                    --header="Browse project directories (type to filter, Enter to select)" \
-                    --preview='bash -c '\''
-                        dir="$1"
-                        printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
-                        if [ -f "$dir/platformio.ini" ]; then
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
-                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
-                        else
-                            printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
-                        fi
-                        printf "  \033[38;2;180;190;254mPath:\033[0m %s\n" "$dir"
-                        printf "\033[38;2;203;166;247m── CONTENTS ────────────────────────────\033[0m\n"
-                        ls -lah "$dir" 2>/dev/null | head -15
-                    '\'' -- {}' \
-                    --preview-window=right:50%:wrap \
-                    --height=80%)
+            _scan_cmd="find \"$start_dir\" -maxdepth 5 -type f \
+\( -name 'platformio.ini' -o -name 'CMakeLists.txt' -o -name '*.ino' \
+   -o -name 'sdkconfig' -o -name 'sdkconfig.defaults' -o -name 'idf_component.yml' \) \
+! -path '*/.*' 2>/dev/null | bash -c 'while IFS= read -r f; do
+    case \"\$f\" in
+        *platformio.ini)        dirname \"\$f\" ;;
+        *CMakeLists.txt)        grep -q \"project.cmake\" \"\$f\" 2>/dev/null && dirname \"\$f\" ;;
+        *sdkconfig|*sdkconfig.defaults|*idf_component.yml) dirname \"\$f\" ;;
+        *.ino)                  dirname \"\$f\" ;;
+    esac
+done' | sort -u"
         fi
+
+        selected_dir=$(fzf \
+                --reverse \
+                --ansi \
+                --prompt="Select project directory > " \
+                --header="Browse project directories (scanning... type to filter, Enter to select)" \
+                --bind "start:reload:$_scan_cmd" \
+                --preview='bash -c '"'"'
+                    dir="$1"
+                    printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
+                    if [ -f "$dir/platformio.ini" ]; then
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                    elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                    elif [ -f "$dir/sdkconfig" ] || [ -f "$dir/sdkconfig.defaults" ] || [ -f "$dir/idf_component.yml" ]; then
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                    elif ls "$dir"/*.ino >/dev/null 2>&1; then
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
+                    else
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;249;226;175mUnknown\033[0m\n"
+                    fi
+                    printf "  \033[38;2;180;190;254mPath:\033[0m %s\n" "$dir"
+                    printf "\033[38;2;203;166;247m── CONTENTS ────────────────────────────\033[0m\n"
+                    ls -lah "$dir" 2>/dev/null | head -15
+                '"'"' -- {}' \
+                --preview-window=right:50%:wrap \
+                --height=80% \
+            < /dev/null)
         
         if [[ -z "$selected_dir" ]]; then
             echo -e "${C_YELLOW}No directory selected.${C_RESET}"

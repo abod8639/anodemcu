@@ -29,10 +29,15 @@ function detect_project_type() {
     if [[ -f "$proj_dir/platformio.ini" ]]; then
         has_pio=true
     fi
+    # ESP-IDF: root CMakeLists.txt with project.cmake include, OR sdkconfig/idf_component.yml
     if [[ -f "$proj_dir/CMakeLists.txt" ]] && grep -q "project.cmake" "$proj_dir/CMakeLists.txt"; then
         has_idf=true
     fi
-    if ls "$proj_dir"/*.ino >/dev/null 2>&1; then
+    if [[ -f "$proj_dir/sdkconfig" || -f "$proj_dir/sdkconfig.defaults" || -f "$proj_dir/idf_component.yml" ]]; then
+        has_idf=true
+    fi
+    # Arduino: only if .ino file exists directly in the project directory
+    if ls "$proj_dir"/*.ino > /dev/null 2>&1; then
         has_ard=true
     fi
 
