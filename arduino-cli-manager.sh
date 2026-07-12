@@ -142,12 +142,14 @@ if [[ -n "$1" ]]; then
     arg_path="$(realpath "$1")"
     if [[ "$(detect_project_type "$arg_path")" != "unknown" ]]; then
         PROJECT="$arg_path"
+        add_to_history "$PROJECT"
     else
         echo -e "${C_YELLOW}Warning: Provided path '$arg_path' is not a recognized project.${C_RESET}"
         sleep 2
     fi
 elif [[ "$(detect_project_type "$(pwd)")" != "unknown" ]]; then
     PROJECT="$(pwd)"
+    add_to_history "$PROJECT"
 fi
 
 resolve_project_type_ambiguity "$PROJECT"
