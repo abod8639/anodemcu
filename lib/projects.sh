@@ -138,15 +138,15 @@ function select_or_create_project() {
                     dir="$1"
                     if [[ "$dir" == ---* ]]; then exit 0; fi
                     if [ -f "$dir/platformio.ini" ]; then
-                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mPlatformIO\033[0m\n"
                     elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
-                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;243;139;168mESP-IDF\033[0m\n"
                     elif [ -f "$dir/sdkconfig" ] || [ -f "$dir/sdkconfig.defaults" ] || [ -f "$dir/idf_component.yml" ]; then
-                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;243;139;168mESP-IDF\033[0m\n"
                     elif ls "$dir"/*.ino >/dev/null 2>&1; then
-                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
                     else
-                        printf "\033[38;2;203;166;247m Platform:\033[0m \033[38;2;249;226;175mUnknown\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;249;226;175mUnknown\033[0m\n"
                     fi
                     printf "\033[38;2;203;166;247m── CONTENTS ──────────────────────────\033[0m\n"
                     ls -lah "$dir" 2>/dev/null | head -15
@@ -250,11 +250,11 @@ done' | sort -u"
                     dir="$1"
                     printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
                     if [ -f "$dir/platformio.ini" ]; then
-                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mPlatformIO\033[0m\n"
                     elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
-                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;243;139;168mESP-IDF\033[0m\n"
                     elif [ -f "$dir/sdkconfig" ] || [ -f "$dir/sdkconfig.defaults" ] || [ -f "$dir/idf_component.yml" ]; then
-                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
+                        printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;243;139;168mESP-IDF\033[0m\n"
                     elif ls "$dir"/*.ino >/dev/null 2>&1; then
                         printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
                     else

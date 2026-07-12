@@ -38,13 +38,13 @@ function print_header() {
                  
                  local ptype
                  ptype=$(detect_project_type "$PROJECT")
-                 local ptype_lbl="Unknown"
+                 local ptype_lbl="${C_YELLOW}Unknown${C_RESET}"
                  case "$ptype" in
-                     espidf) ptype_lbl="ESP-IDF" ;;
-                     platformio) ptype_lbl="PlatformIO" ;;
-                     arduino) ptype_lbl="Arduino" ;;
+                     espidf) ptype_lbl="${C_RED}ESP-IDF${C_RESET}" ;;
+                     platformio) ptype_lbl="${C_PURPLE}PlatformIO${C_RESET}" ;;
+                     arduino) ptype_lbl="${C_GREEN}Arduino${C_RESET}" ;;
                  esac
-                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Platform:" "$ptype_lbl"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %b\\n" "Platform:" "$ptype_lbl"
                  
                  printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Board:"   "${FQBN:-   $DEFAULT_FQBN}"
                  printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-   $DEFAULT_PORT}"
@@ -103,6 +103,9 @@ function show_help() {
     echo -e "${C_SHORTCUT}Configuration:${C_RESET}"
     echo "  Config file: ~/.anodemcu.conf"
     echo "  Projects directory: $SKETCH_DIR"
+    echo ""
+    echo -e "${C_SHORTCUT}Official Repository:${C_RESET}"
+    echo "  https://github.com/abod8639/anodemcu"
     echo ""
     press_enter_to_continue
 }
