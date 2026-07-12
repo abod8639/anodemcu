@@ -9,7 +9,7 @@ url="https://github.com/abod8639/${pkgname}"
 license=('MIT')
 depends=('arduino-cli' 'fzf' 'jq' 'neovim')
 optdepends=()
-source=("https://github.com/abod8639/${pkgname}/archive/refs/tags/${pkgver}.tar.gz")
+source=("https://github.com/abod8639/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz")
 sha256sums=('SKIP')
 
 package() {
