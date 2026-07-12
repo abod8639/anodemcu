@@ -87,30 +87,62 @@ function _create_new_project_prompt() {
 function select_or_create_project() {
     print_header
 
-    if command -v fzf &> /dev/null; then 
-        # Find projects using fd or find (without eval for security)
-        local projects
+        # Load history
+        local history_paths=""
+        if [[ -f "$HISTORY_FILE" ]]; then
+            while IFS= read -r line; do
+                if [[ -d "$line" ]]; then
+                    history_paths+="$line"$'\n'
+                fi
+            done < "$HISTORY_FILE"
+        fi
+        
+        # Remove trailing newline from history_paths
+        history_paths="${history_paths%$'\n'}"
+
+        # Get other projects
+        local other_projects=""
         if command -v fd &> /dev/null; then
-            projects=$(fd . "$SKETCH_DIR" --type d --max-depth 1)
+            other_projects=$(fd . "$SKETCH_DIR" --type d --max-depth 1)
         else
-            projects=$(find "$SKETCH_DIR" -mindepth 1 -maxdepth 1 -type d)
+            other_projects=$(find "$SKETCH_DIR" -mindepth 1 -maxdepth 1 -type d)
+        fi
+
+        # Remove projects that are already in history to avoid duplication in FZF list
+        local filtered_projects=""
+        while IFS= read -r proj; do
+            if [[ -n "$proj" ]]; then
+                if ! echo "$history_paths" | grep -qFx "$proj"; then
+                    filtered_projects+="$proj"$'\n'
+                fi
+            fi
+        done <<< "$other_projects"
+        filtered_projects="${filtered_projects%$'\n'}"
+
+        local fzf_list="--- CREATE NEW PROJECT ---"$'\n'"--- BROWSE CUSTOM PATH ---"
+        if [[ -n "$history_paths" ]]; then
+            fzf_list+=$'\n'"--- RECENT PROJECTS ---"$'\n'"$history_paths"
+        fi
+        if [[ -n "$filtered_projects" ]]; then
+            fzf_list+=$'\n'"--- OTHER PROJECTS ---"$'\n'"$filtered_projects"
         fi
 
         local choice
-        choice=$( (echo "--- CREATE NEW PROJECT ---"; echo "--- BROWSE CUSTOM PATH ---"; echo "$projects") | \
+        choice=$(echo "$fzf_list" | \
             fzf --reverse --prompt="Select or create a project: " \
-            --height=50%\
-                --header "Enter to select."
+            --height=70% \
+            --header "Enter to select."
         )
 
-        if [[ -z "$choice" ]]; then
-            return # User pressed Esc
+        if [[ -z "$choice" || "$choice" == "--- RECENT PROJECTS ---" || "$choice" == "--- OTHER PROJECTS ---" ]]; then
+            return # User pressed Esc or selected a header
         elif [[ "$choice" == "--- CREATE NEW PROJECT ---" ]]; then
             _create_new_project_prompt
         elif [[ "$choice" == "--- BROWSE CUSTOM PATH ---" ]]; then
             browse_custom_path
         else
             PROJECT="$choice"
+            add_to_history "$PROJECT"
         fi
     else
         # Fallback to the original menu if fzf is not installed
@@ -134,6 +166,7 @@ function select_or_create_project() {
                     break
                 elif [[ -n "$project_dir" ]]; then
                     PROJECT="$SKETCH_DIR/${project_dir%/}"
+                    add_to_history "$PROJECT"
                     break
                 else
                     echo -e "${C_RED}Invalid selection. Please try again.${C_RESET}"
@@ -229,6 +262,7 @@ function browse_custom_path() {
     fi
     
     PROJECT="$custom_path"
+    add_to_history "$PROJECT"
     echo -e "${C_GREEN}Selected project: ${C_YELLOW}$PROJECT${C_RESET}"
     sleep 1
 }
