@@ -7,7 +7,7 @@
 
 function print_logo() {
                  echo "                                                          "
-     echo -e "${C_CYAN}  ██████╗  █████╗ ██████╗  ██╗   ██╗██╗███╗   ██╗ ██████╗ "
+     echo -e "${C_LOGO}  ██████╗  █████╗ ██████╗  ██╗   ██╗██╗███╗   ██╗ ██████╗ "
                  echo "  ██╔══██╗██╔══██╗██╔══██╗ ██║   ██║██║████╗  ██║██╔═══██╗"
                  echo "  ██████╔╝███████║██║  ██║ ██║   ██║██║██╔██╗ ██║██║   ██║"
                  echo "  ██╔══██║██╔══██║██║  ██║ ██║   ██║██║██║╚██╗██║██║   ██║"
@@ -18,14 +18,14 @@ function print_logo() {
 function print_header() {
     clear
                                               print_logo
-    echo -e "${C_GREEN} ┌────────────────────────────────────────────────────────┐"
-                 echo " │                 ARDUINO CLI MANAGER                    │"
+    echo -e "${C_LOGO} ┌────────────────────────────────────────────────────────┐"
                  echo " │                                                        │"
                  echo " │ Select board, serial, compile, upload & monitor easily │"
+                 echo " │                                                        │"
               echo -e " └────────────────────────────────────────────────────────┘${C_RESET}"
                                           get_version_line
                  echo "────────────────────────────────────────────────────────────"
-                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Project:" "${PROJECT:-$DEFAULT_PROJECT}"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Project:" "${PROJECT:-$DEFAULT_PROJECT}"
                  
                  local ptype
                  ptype=$(detect_project_type "$PROJECT")
@@ -35,11 +35,11 @@ function print_header() {
                      platformio) ptype_lbl="PlatformIO" ;;
                      arduino) ptype_lbl="Arduino" ;;
                  esac
-                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Platform:" "$ptype_lbl"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Platform:" "$ptype_lbl"
                  
-                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Board:"   "${FQBN:-   $DEFAULT_FQBN}"
-                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-   $DEFAULT_PORT}"
-                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Baud:"    "${BAUD:-   $DEFAULT_BAUD}"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Board:"   "${FQBN:-   $DEFAULT_FQBN}"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-   $DEFAULT_PORT}"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Baud:"    "${BAUD:-   $DEFAULT_BAUD}"
                  echo "────────────────────────────────────────────────────────────"
 }
 
@@ -57,7 +57,7 @@ function get_version_line() {
         fi
     fi
 
-    local version_msg="v$VERSION"
+    local version_msg=" "
     printf "${C_GREEN} %*s%*s \\n${C_RESET}" $(( (59 + ${#version_msg}) / 2 )) "$version_msg" $(( (59 - ${#version_msg}) / 2 )) ""
 }
 
@@ -71,14 +71,14 @@ function show_help() {
     echo ""
     echo "This tool helps you manage Arduino projects easily."
     echo ""
-    echo -e "${C_CYAN}Getting Started:${C_RESET}"
+    echo -e "${C_SHORTCUT}Getting Started:${C_RESET}"
     echo "  1. Select or create a project (S)"
     echo "  2. Select your board type (B)"
     echo "  3. Connect board and select port (P)"
     echo "  4. Compile your sketch (C)"
     echo "  5. Upload to board (U)"
     echo ""
-    echo -e "${C_CYAN}Keyboard Shortcuts:${C_RESET}"
+    echo -e "${C_SHORTCUT}Keyboard Shortcuts:${C_RESET}"
     echo "  S - Select/Create Project    B - Select Board (FQBN)"
     echo "  P - Select Port              C - Compile Project"
     echo "  U - Upload Project           M - Serial Monitor"
@@ -86,12 +86,12 @@ function show_help() {
     echo "  A - List All Boards          I - Install Core"
     echo "  H - Show this help           Q - Quit"
     echo ""
-    echo -e "${C_CYAN}Common Workflows:${C_RESET}"
-    echo "  ${C_YELLOW}New Project:${C_RESET} S → Create new → B → P → C → U"
-    echo "  ${C_YELLOW}Quick Upload:${C_RESET} U (if project already selected)"
-    echo "  ${C_YELLOW}Debug Output:${C_RESET} M (opens serial monitor)"
+    echo -e "${C_SHORTCUT}Common Workflows:${C_RESET}"
+    echo "  ${C_SHORTCUT}New Project:${C_RESET} S → Create new → B → P → C → U"
+    echo "  ${C_SHORTCUT}Quick Upload:${C_RESET} U (if project already selected)"
+    echo "  ${C_SHORTCUT}Debug Output:${C_RESET} M (opens serial monitor)"
     echo ""
-    echo -e "${C_CYAN}Configuration:${C_RESET}"
+    echo -e "${C_SHORTCUT}Configuration:${C_RESET}"
     echo "  Config file: ~/.arduino-cli-manager.conf"
     echo "  Projects directory: $SKETCH_DIR"
     echo ""
