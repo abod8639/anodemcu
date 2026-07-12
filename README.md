@@ -14,18 +14,20 @@
 
 ---
 
-`arduino-cli-manager` is a **premium, interactive TUI (Terminal User Interface)** designed to simplify Arduino development. It transforms the powerful `arduino-cli` into a vibrant, intuitive experience, allowing you to manage boards, ports, libraries, and projects without touching the documentation.
+`arduino-cli-manager` is a **premium, interactive TUI (Terminal User Interface)** designed to simplify microcontroller development. It transforms the command-line tools into a vibrant, intuitive experience, allowing you to manage boards, ports, libraries, and projects across multiple ecosystems.
 
 > [!TIP]
-> **Perfect for developers** who live in the terminal and want a high-speed, "no-nonsense" workflow for compiling and uploading sketches.
+> **Perfect for developers** who live in the terminal and want a high-speed, "no-nonsense" workflow for compiling and uploading code.
 
 ## Features
 
+- **Multi-Platform Support**: Seamlessly work with **Arduino CLI**, **ESP-IDF**, and **PlatformIO** projects.
+- **Auto-Detection & Ambiguity Resolution**: Automatically detects the project type based on files. If multiple configurations exist (e.g. both `CMakeLists.txt` and `platformio.ini`), it prompts you to select your preferred platform and saves the choice.
+- **ESP-IDF Auto-Sourcing**: Automatically locates and sources the ESP-IDF `export.sh` script if it's not active in the current shell environment.
 - **Rich Terminal UI**: Vibrant color-coded interface with a live dashboard header.
 - **Fuzzy Search Integration**: Powered by `fzf` for near-instant selection of boards, ports, and libraries.
-- **Smart Project Management**: Create, select, and edit projects (Neovim support) from a single menu.
+- **Smart Project Management**: Create, select, and edit projects (Neovim support) from a single menu, starting automatically in the current directory if it is a valid project.
 - **Safe Uploads**: Automatic project backups before every upload (keeps the last 5 versions).
-- **Library Manager**: Search and manage Arduino libraries directly from the terminal.
 - **Integrated Monitor**: Quick access to the serial monitor for real-time debugging.
 - **Operation Logging**: Complete history of your actions with automatic log rotation.
 - **Native Arch Linux Support**: Available directly via the AUR.
@@ -62,8 +64,10 @@ chmod +x arduino-cli-manager.sh
 
 | Dependency | Purpose | Status |
 | :--- | :--- | :--- |
-| `arduino-cli` | Core functionality | **Required** |
 | `bash` | Script execution | **Required** |
+| `arduino-cli` | Arduino compilation and upload | Required for Arduino projects |
+| `idf.py` (ESP-IDF) | ESP-IDF compilation and upload | Required for ESP-IDF projects |
+| `pio` (PlatformIO) | PlatformIO compilation and upload | Required for PlatformIO projects |
 | `fzf` | Interactive fuzzy searching | Recommended |
 | `jq` | Update notifications | Recommended |
 | `nvim` | Integrated code editing | Optional |
@@ -92,16 +96,27 @@ sudo dnf install arduino-cli fzf jq neovim
 
 Simply type `acm` (if installed globally) or `./arduino-cli-manager.sh` to open the main menu.
 
-### Keyboard Shortcuts
+### Keyboard Shortcuts & Platform-Specific Actions
 Use these single-key triggers for a lightning-fast workflow:
 
-| Key | Action | Key | Action |
-| :---: | :--- | :---: | :--- |
-| **S** | Select/Create Project | **U** | Upload Project |
-| **B** | Select Board (FQBN) | **C** | Compile Project |
-| **P** | Select Port | **M** | Open Serial Monitor |
-| **R** | Manage Libraries | **E** | Edit Code (Neovim) |
-| **L** | List Cores | **H** | Show Help |
+| Key | Action | Platform / Ecosystem |
+| :---: | :--- | :--- |
+| **S** | Select/Create Project | All |
+| **B** | Select Board (FQBN / Target) | All (IDF: `set-target`, PIO: updates `platformio.ini`) |
+| **P** | Select Port | All |
+| **C** | Compile Project | All (`arduino-cli`, `idf.py build`, or `pio run`) |
+| **U** | Upload Project | All (`arduino-cli`, `idf.py flash`, or `pio run -t upload`) |
+| **M** | Open Serial Monitor | All |
+| **E** | Edit Code (Neovim) | All |
+| **R** | Manage Libraries | Arduino |
+| **L** | List Cores | Arduino |
+| **A** | List All Supported Boards | Arduino |
+| **I** | Install Core | Arduino |
+| **F** | Open configuration menu (`idf.py menuconfig`) | ESP-IDF |
+| **N** | Clean build files (`idf.py clean` or `pio clean`) | ESP-IDF / PlatformIO |
+| **Z** | Show flash size statistics (`idf.py size`) | ESP-IDF |
+| **O** | Install PlatformIO library (`pio pkg install`) | PlatformIO |
+| **H** | Show Help | All |
 
 ---
 
