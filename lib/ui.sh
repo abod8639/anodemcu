@@ -26,6 +26,17 @@ function print_header() {
                                           get_version_line
                  echo "────────────────────────────────────────────────────────────"
                  printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Project:" "${PROJECT:-$DEFAULT_PROJECT}"
+                 
+                 local ptype
+                 ptype=$(detect_project_type "$PROJECT")
+                 local ptype_lbl="Unknown"
+                 case "$ptype" in
+                     espidf) ptype_lbl="ESP-IDF" ;;
+                     platformio) ptype_lbl="PlatformIO" ;;
+                     arduino) ptype_lbl="Arduino" ;;
+                 esac
+                 printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Platform:" "$ptype_lbl"
+                 
                  printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Board:"   "${FQBN:-   $DEFAULT_FQBN}"
                  printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-   $DEFAULT_PORT}"
                  printf " ${C_YELLOW}%-12s${C_RESET} %s\\n" "Baud:"    "${BAUD:-   $DEFAULT_BAUD}"
