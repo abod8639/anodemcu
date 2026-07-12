@@ -15,6 +15,7 @@ DEFAULT_PROJECT="Not Selected"
 # --- Directories ---
 SKETCH_DIR="$HOME/Arduino"
 CONFIG_FILE="$HOME/.arduino-cli-manager.conf"
+HISTORY_FILE="$HOME/.arduino-cli-manager.history"
 BACKUP_DIR="$HOME/.arduino-cli-manager/backups"
 LOG_DIR="$HOME/.arduino-cli-manager/logs"
 LOG_FILE="$LOG_DIR/arduino-manager.log"
