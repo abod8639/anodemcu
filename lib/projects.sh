@@ -3,6 +3,49 @@
 # Arduino CLI Manager - Projects Module
 # This file contains project management functions
 
+function _create_new_project_prompt() {
+    print_header
+    echo -e "${C_GREEN}==> Select Platform:${C_RESET}"
+    echo -e " 1) Arduino"
+    echo -e " 2) ESP-IDF"
+    echo -e " 3) PlatformIO"
+    read -rp "Choice [1/2/3]: " plat_choice
+    
+    read -rp "Enter new project name: " name
+    if [[ -z "$name" ]]; then
+        echo -e "${C_RED}Project name cannot be empty.${C_RESET}"
+        sleep 1
+        return
+    fi
+
+    local target_dir="$SKETCH_DIR/$name"
+
+    case "$plat_choice" in
+        2)
+            echo -e "${C_GREEN}Creating ESP-IDF project...${C_RESET}"
+            (cd "$SKETCH_DIR" && run_idf_command create-project "$name")
+            PROJECT="$target_dir"
+            ;;
+        3)
+            echo -e "${C_GREEN}Creating PlatformIO project...${C_RESET}"
+            read -rp "Enter Board ID (e.g. esp32dev, uno): " board_id
+            if [[ -z "$board_id" ]]; then
+                echo -e "${C_RED}Board ID is required for PlatformIO.${C_RESET}"
+                sleep 1
+                return
+            fi
+            mkdir -p "$target_dir"
+            (cd "$target_dir" && pio project init -b "$board_id")
+            PROJECT="$target_dir"
+            ;;
+        *)
+            echo -e "${C_GREEN}Creating Arduino project...${C_RESET}"
+            run_arduino_cli_command sketch new "$target_dir"
+            PROJECT="$target_dir"
+            ;;
+    esac
+}
+
 function select_or_create_project() {
     print_header
 
@@ -25,11 +68,7 @@ function select_or_create_project() {
         if [[ -z "$choice" ]]; then
             return # User pressed Esc
         elif [[ "$choice" == "--- CREATE NEW PROJECT ---" ]]; then
-            read -rp "Enter new sketch name: " name
-            if [[ -n "$name" ]]; then
-                run_arduino_cli_command sketch new "$SKETCH_DIR/$name"
-                PROJECT="$SKETCH_DIR/$name"
-            fi
+            _create_new_project_prompt
         elif [[ "$choice" == "--- BROWSE CUSTOM PATH ---" ]]; then
             browse_custom_path
         else
@@ -43,11 +82,7 @@ function select_or_create_project() {
         echo -e "${C_GREEN}==> (1) Select an existing sketch\n==> (2) Create a new sketch\n==> (3) Browse custom path${C_RESET}"
         read -rp "[1/2/3]: " menu_choice
         if [[ "$menu_choice" == "2" ]]; then
-            read -rp "Enter new sketch name: " name
-            if [[ -n "$name" ]]; then
-                run_arduino_cli_command sketch new "$SKETCH_DIR/$name"
-                PROJECT="$SKETCH_DIR/$name"
-            fi
+            _create_new_project_prompt
         elif [[ "$menu_choice" == "3" ]]; then
             browse_custom_path
         else
@@ -69,6 +104,7 @@ function select_or_create_project() {
             cd "$current_dir"
         fi
     fi
+    resolve_project_type_ambiguity "$PROJECT"
 }
 
 function browse_custom_path() {
@@ -89,7 +125,7 @@ function browse_custom_path() {
         if command -v fd &> /dev/null; then
             selected_dir=$(fd . "$start_dir" --type d --max-depth 5 --hidden --exclude .git | \
                 fzf --reverse \
-                    --prompt="Select Arduino project directory > " \
+                    --prompt="Select project directory > " \
                     --header="Browse directories (type to filter, Enter to select)" \
                     --preview='ls -lah {} 2>/dev/null | head -20' \
                     --preview-window=right:50%:wrap \
@@ -97,7 +133,7 @@ function browse_custom_path() {
         else
             selected_dir=$(find "$start_dir" -maxdepth 5 -type d ! -path "*/\.*" 2>/dev/null | \
                 fzf --reverse \
-                    --prompt="Select Arduino project directory > " \
+                    --prompt="Select project directory > " \
                     --header="Browse directories (type to filter, Enter to select)" \
                     --preview='ls -lah {} 2>/dev/null | head -20' \
                     --preview-window=right:50%:wrap \
@@ -114,8 +150,8 @@ function browse_custom_path() {
     else
         # Fallback to manual path entry if fzf is not available
         echo -e "${C_YELLOW}Tip: Install 'fzf' for interactive directory browsing${C_RESET}"
-        echo -e "${C_YELLOW}Enter the full path to your Arduino project directory${C_RESET}"
-        echo -e "${C_CYAN}(The directory should contain a .ino file)${C_RESET}"
+        echo -e "${C_YELLOW}Enter the full path to your project directory${C_RESET}"
+        echo -e "${C_CYAN}(The directory should contain a project file like .ino, CMakeLists.txt, or platformio.ini)${C_RESET}"
         echo ""
         
         read -rp "Path: " custom_path
@@ -137,11 +173,12 @@ function browse_custom_path() {
         return
     fi
     
-    # Check if it contains .ino files
-    local ino_count=$(find "$custom_path" -maxdepth 1 -name "*.ino" -type f 2>/dev/null | wc -l)
+    # Check project type
+    local ptype
+    ptype=$(detect_project_type "$custom_path")
     
-    if [[ $ino_count -eq 0 ]]; then
-        echo -e "${C_YELLOW}Warning: No .ino files found in this directory.${C_RESET}"
+    if [[ "$ptype" == "unknown" ]]; then
+        echo -e "${C_YELLOW}Warning: No Arduino, ESP-IDF, or PlatformIO project found in this directory.${C_RESET}"
         echo -e "${C_CYAN}Found in: $custom_path${C_RESET}"
         read -rp "Use this path anyway? [y/N]: " confirm
         if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
@@ -150,7 +187,7 @@ function browse_custom_path() {
             return
         fi
     else
-        echo -e "${C_GREEN}Found $ino_count .ino file(s) in this directory ✓${C_RESET}"
+        echo -e "${C_GREEN}Detected project type: $ptype ✓${C_RESET}"
     fi
     
     PROJECT="$custom_path"
