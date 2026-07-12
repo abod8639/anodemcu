@@ -29,7 +29,7 @@ function detect_project_type() {
     if [[ -f "$proj_dir/platformio.ini" ]]; then
         has_pio=true
     fi
-    if [[ -f "$proj_dir/CMakeLists.txt" ]] && grep -q -i "project(" "$proj_dir/CMakeLists.txt"; then
+    if [[ -f "$proj_dir/CMakeLists.txt" ]] && grep -q "project.cmake" "$proj_dir/CMakeLists.txt"; then
         has_idf=true
     fi
     if ls "$proj_dir"/*.ino >/dev/null 2>&1; then

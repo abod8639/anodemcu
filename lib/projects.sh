@@ -195,7 +195,13 @@ function browse_custom_path() {
         
         # Use fd if available for faster directory listing, otherwise use find
         if command -v fd &> /dev/null; then
-            selected_dir=$(fd -H -t f -d 5 --exclude .git "platformio.ini|CMakeLists.txt|\.ino$" "$start_dir" | while read -r file; do dirname "$file"; done | sort -u | \
+            selected_dir=$(fd -H -t f -d 5 --exclude .git "platformio.ini|CMakeLists.txt|\.ino$" "$start_dir" | while read -r file; do
+                if [[ "$file" == */CMakeLists.txt ]]; then
+                    grep -q "project.cmake" "$file" 2>/dev/null && dirname "$file"
+                else
+                    dirname "$file"
+                fi
+            done | sort -u | \
                 fzf --reverse \
                     --prompt="Select project directory > " \
                     --header="Browse project directories (type to filter, Enter to select)" \
@@ -204,7 +210,7 @@ function browse_custom_path() {
                         printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
                         if [ -f "$dir/platformio.ini" ]; then
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
-                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q -i "project(" "$dir/CMakeLists.txt" 2>/dev/null; then
+                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
                         else
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
@@ -216,7 +222,13 @@ function browse_custom_path() {
                     --preview-window=right:50%:wrap \
                     --height=80%)
         else
-            selected_dir=$(find "$start_dir" -maxdepth 5 -type f \( -name "platformio.ini" -o -name "CMakeLists.txt" -o -name "*.ino" \) ! -path "*/\.*" 2>/dev/null | while read -r file; do dirname "$file"; done | sort -u | \
+            selected_dir=$(find "$start_dir" -maxdepth 5 -type f \( -name "platformio.ini" -o -name "CMakeLists.txt" -o -name "*.ino" \) ! -path "*/\.*" 2>/dev/null | while read -r file; do
+                if [[ "$file" == */CMakeLists.txt ]]; then
+                    grep -q "project.cmake" "$file" 2>/dev/null && dirname "$file"
+                else
+                    dirname "$file"
+                fi
+            done | sort -u | \
                 fzf --reverse \
                     --prompt="Select project directory > " \
                     --header="Browse project directories (type to filter, Enter to select)" \
@@ -225,7 +237,7 @@ function browse_custom_path() {
                         printf "\033[38;2;203;166;247m── PROJECT INFO ────────────────────────\033[0m\n"
                         if [ -f "$dir/platformio.ini" ]; then
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;137;220;235mPlatformIO\033[0m\n"
-                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q -i "project(" "$dir/CMakeLists.txt" 2>/dev/null; then
+                        elif [ -f "$dir/CMakeLists.txt" ] && grep -q "project.cmake" "$dir/CMakeLists.txt" 2>/dev/null; then
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;203;166;247mESP-IDF\033[0m\n"
                         else
                             printf "  \033[38;2;180;190;254mPlatform:\033[0m \033[38;2;166;227;161mArduino\033[0m\n"
