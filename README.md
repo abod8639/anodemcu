@@ -39,7 +39,7 @@
 ### Arch Linux (AUR)
 If you are on Arch, this is the recommended way:
 ```bash
-yay -S anodemcu-git
+yay -S anodemcu
 ```
 
 ### Global Installation (Any Linux/macOS)
