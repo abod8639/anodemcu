@@ -76,7 +76,7 @@ function press_enter_to_continue() {
 
 function show_help() {
     print_header
-    echo -e "${C_GREEN}==> Anode MCU Manager - Quick Help${C_RESET}"
+    echo -e "${C_GREEN}==> Anode MCU Manager (v$VERSION) - Quick Help${C_RESET}"
     echo ""
     echo "This tool helps you manage microcontroller projects easily."
     echo ""
