@@ -1,7 +1,7 @@
 # Maintainer: abod8639 <https://github.com/abod8639>
 
 pkgname=anodemcu
-pkgver=3.0.1
+pkgver=3.0.2
 pkgrel=1
 pkgdesc="A powerful interactive shell script to manage MCU projects (Arduino, ESP-IDF, PlatformIO)"
 arch=('any')
