@@ -1,7 +1,7 @@
-# Anode MCU Manager
+# <B>Anode MCU Manager</B>
 
 <p align="center">
-  <img src="assets/image.png" width="350" alt="Anode MCU Manager Preview" />
+  <img src="assets/image.png" width="400" alt="Anode MCU Manager Preview" />
 </p>
 
 <p align="center">
