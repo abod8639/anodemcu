@@ -12,7 +12,21 @@
   <img src="https://img.shields.io/github/stars/abod8639/anodemcu?style=flat&color=gold" alt="Stars">
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Made%50with-ESP IDF-red?style=flat&logo=espressif&logoColor=red" alt="ESP-IDF">
+  <img src="https://img.shields.io/badge/Made%20with-PlatformIO-orange?style=flat&logo=platformio&logoColor=orange  " alt="PlatformIO">
+  <img src="https://img.shields.io/badge/Made%20with-Arduino-blue?style=flat&logo=arduino&logoColor=blue" alt="Arduino">
+</p>
+
 ---
+
+<p align="center">
+  <img src="https://www.espressif.com/sites/all/themes/espressif/images/esp-eye/new/2.png" height="100" alt="Esp-idf" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://cdn.platformio.org/images/platformio-logo.17fdc3bc.png" height="100" alt="PlatformIO" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Arduino_IDE_logo.svg/1280px-Arduino_IDE_logo.svg.png?_=20230510165732" height="100" alt="Arduino" />
+</p>
 
 `anodemcu` is a **premium, interactive TUI (Terminal User Interface)** designed to simplify microcontroller development. It transforms the command-line tools into a vibrant, intuitive experience, allowing you to manage boards, ports, libraries, and projects across multiple ecosystems.
 
