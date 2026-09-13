@@ -1,0 +1,17 @@
+# Build and package artifacts
+*.pkg.tar.*
+pkg/
+src/
+*.tar.gz
+*.tar.xz
+*.tar.zst
+
+# Logs and debug
+*.log
+firebase-debug.log*
+
+# Editor and OS
+.vscode/
+*.swp
+*~
+.DS_Store
