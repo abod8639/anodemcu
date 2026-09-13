@@ -123,7 +123,7 @@ function upload_sketch() {
             upload_port=$(echo "$board_list" | awk '{print $1}')
             echo -e "${C_GREEN}Auto-selected port: ${C_YELLOW}${upload_port}${C_RESET}"
         else
-            echo -e "${C_YELLOW}Multiple boards detected. Please select one for upload:${C_RESET}"
+            echo -e "${C_YELLOW}Multiple ports detected. Please select one for upload:${C_RESET}"
             
             local choice
             if command -v fzf &> /dev/null; then
@@ -157,7 +157,7 @@ function upload_sketch() {
         upload_fqbn="${FQBN:-$DEFAULT_FQBN}"
         
         # For regular upload, compile and upload in one step
-        echo -e "${C_GREEN}==> Compiling and uploading to port ${C_YELLOW}${upload_port}${C_RESET}...${C_RESET}"
+        echo -e "${C_GREEN}==> Compiling and uploading to port ${C_YELLOW}${upload_port}${C_RESET} [${C_CYAN}${upload_fqbn}${C_RESET}]...${C_RESET}"
         
         local ptype
         ptype=$(detect_project_type "$project_to_upload")
@@ -168,7 +168,7 @@ function upload_sketch() {
         elif [[ "$ptype" == "platformio" ]]; then
             if (cd "$project_to_upload" && pio run -t upload --upload-port "$upload_port"); then success=true; fi
         else
-            if arduino-cli upload --fqbn "$upload_fqbn" -p "$upload_port" "$project_to_upload" -v; then success=true; fi
+            if arduino-cli compile --fqbn "$upload_fqbn" --upload -p "$upload_port" "$project_to_upload" -v; then success=true; fi
         fi
         
         if [[ "$success" == false ]]; then
@@ -184,6 +184,5 @@ function upload_sketch() {
     
     echo -e "${C_GREEN}Sketch '${project_to_upload##*/}' uploaded successfully!${C_RESET}"
     log_operation "UPLOAD" "SUCCESS" "${project_to_upload##*/} to $upload_port"
-    
-
+    press_enter_to_continue
 }
