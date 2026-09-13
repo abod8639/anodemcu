@@ -10,6 +10,6 @@ pkgbase = anodemcu
 	depends = jq
 	depends = neovim
 	source = https://github.com/abod8639/anodemcu/archive/refs/tags/v3.0.3.tar.gz
-	sha256sums = 412325608deffc6247f1c0510003adcba1ba67a0857d25b7bd49eb999a869067
+	sha256sums = e0dc28d0d0362e52dc2ceb3972d5d5a72785000971b812e8a54eb4213f70660d
 
 pkgname = anodemcu
