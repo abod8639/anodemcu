@@ -59,9 +59,7 @@ yay -S anodemcu
 ### Global Installation (Any Linux/macOS)
 Clone the repository and run the automated installer:
 ```bash
-git clone https://github.com/abod8639/anodemcu.git
-cd anodemcu
-./install.sh
+git clone https://github.com/abod8639/anodemcu.git && cd anodemcu && ./install.sh
 ```
 *This will install the tool to `~/.local/bin/anodemcu` and set up a convenient `anode` alias.*
 
