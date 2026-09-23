@@ -63,12 +63,24 @@ git clone https://github.com/abod8639/anodemcu.git && cd anodemcu && ./install.s
 ```
 *This will install the tool to `~/.local/bin/anodemcu` and set up a convenient `anode` alias.*
 
-### Manual Install
+<details>
+<summary>Manual Install</summary>
+
 ```bash
+# Clone repository
+git clone https://github.com/abod8639/anodemcu.git
+cd anodemcu
+
+# Install
+chmod +x install.sh
+./install.sh
+
+# Or run locally
 chmod +x anodemcu
-# Run locally
 ./anodemcu
 ```
+
+</details>
 
 ---
 
@@ -86,10 +98,6 @@ chmod +x anodemcu
 
 <!-- install Prerequisites command  -->
 
-### Arch Linux
-```bash
-yay -S arduino-cli fzf jq neovim
-```
 
 ### Debian/Ubuntu
 ```bash
