@@ -95,11 +95,9 @@ cat > "$INSTALL_DIR/$INSTALL_NAME" << EOF
 # Anode MCU Manager - Global Wrapper
 # This script allows running anodemcu from anywhere
 
-# Get the installation directory
 MANAGER_DIR="$SCRIPT_DIR"
 
-# Change to manager directory and run
-cd "\$MANAGER_DIR" && ./anodemcu "\$@"
+exec "\$MANAGER_DIR/anodemcu" "\$@"
 EOF
 
 # Make executable
