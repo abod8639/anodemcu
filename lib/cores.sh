@@ -3,21 +3,6 @@
 # Arduino CLI Manager - Cores Module
 # This file contains core management and update functions
 
-function check_for_update() {
-    if ! command -v jq &> /dev/null || ! command -v curl &> /dev/null; then
-        return # Skip check if jq or curl is not available
-    fi
-
-    local repo="abod8639/anodemcu"
-    local response
-
-    response=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
-
-    if echo "$response" | jq -e '.tag_name' > /dev/null; then
-        LATEST_VERSION=$(echo "$response" | jq -r '.tag_name' | sed 's/v//') # Remove 'v' prefix if it exists
-    fi
-}
-
 function list_installed_cores() {
     print_header
     echo -e "${C_GREEN}==> Installed Cores:${C_RESET}"
@@ -28,25 +13,42 @@ function list_installed_cores() {
 
 function update_script() {
     print_header
-    if [[ -n "$LATEST_VERSION" && "$LATEST_VERSION" != "$VERSION" ]]; then
+    local is_newer=false
+    if [[ -n "$LATEST_VERSION" ]]; then
+        vercmp_portable "${LATEST_VERSION#v}" "${VERSION#v}"
+        [[ $? -eq 1 ]] && is_newer=true
+    fi
+
+    if [[ "$is_newer" == true ]]; then
         echo -e "${C_GREEN}==> Update Available! ${C_RESET}"
-        echo -e "A new version (${C_YELLOW}v$LATEST_VERSION${C_RESET}) of the script is available."
+        echo -e "A new version (${C_YELLOW}v$LATEST_VERSION${C_RESET}) is available."
         echo -e "Your current version is ${C_YELLOW}v$VERSION${C_RESET}."
         echo
-        read -rp "Do you want to update now? [Y/n]: " update_choice
-        if [[ -z "$update_choice" || "$update_choice" =~ ^[Yy]$ ]]; then
-            echo -e "${C_GREEN}==> Updating script...${C_RESET}"
-            local repo="abod8639/anodemcu"
-            # Use $0 to refer to the script itself, making it self-updating
-            if curl -sL "https://raw.githubusercontent.com/$repo/main/anodemcu" -o "$0" && chmod +x "$0"; then
-                echo -e "${C_GREEN}Update successful! Please restart the script to use the new version.${C_RESET}"
-                exit 0
+        
+        # Check if running from a git repository
+        if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree &> /dev/null; then
+            read -rp "Update repository using git pull? [Y/n]: " update_choice
+            if [[ -z "$update_choice" || "$update_choice" =~ ^[Yy]$ ]]; then
+                echo -e "${C_GREEN}==> Pulling latest changes...${C_RESET}"
+                if (cd "$SCRIPT_DIR" && git pull --ff-only); then
+                    echo -e "${C_GREEN}Update successful! Please restart the script.${C_RESET}"
+                    exit 0
+                else
+                    echo -e "${C_RED}Error: git pull failed. Please update manually.${C_RESET}"
+                    press_enter_to_continue
+                fi
             else
-                echo -e "${C_RED}Error: Update failed. Please try again later or update manually.${C_RESET}"
+                echo "Update skipped."
                 press_enter_to_continue
             fi
+        elif [[ "$SCRIPT_DIR" == /usr/* ]]; then
+            echo -e "${C_CYAN}Anode MCU was installed via system package manager (AUR/pacman).${C_RESET}"
+            echo -e "Please update using your AUR helper, for example:"
+            echo -e "  ${C_YELLOW}yay -Syu anodemcu${C_RESET}  or  ${C_YELLOW}paru -Syu anodemcu${C_RESET}"
+            press_enter_to_continue
         else
-            echo "Update skipped."
+            echo -e "To update, please download the latest release v$LATEST_VERSION from:"
+            echo -e "  ${C_YELLOW}https://github.com/abod8639/anodemcu/releases/latest${C_RESET}"
             press_enter_to_continue
         fi
     else
