@@ -96,6 +96,7 @@ function select_board() {
 
         if [[ -n "$target" ]]; then
             (cd "$PROJECT" && run_idf_command set-target "$target")
+            echo "$target" > "$PROJECT/.anodemcu.target" 2>/dev/null
             echo -e "${C_GREEN}Target set to ${C_YELLOW}$target${C_RESET}"
             press_enter_to_continue
         fi
@@ -129,10 +130,15 @@ function select_board() {
         fi
 
         if [[ -n "$board_id" ]]; then
-            if sed -i "s/^board *=.*/board = $board_id/" "$PROJECT/platformio.ini"; then
+            if [[ -f "$PROJECT/platformio.ini" ]]; then
+                if grep -q "^board *=" "$PROJECT/platformio.ini"; then
+                    sed -i "s/^board *=.*/board = $board_id/" "$PROJECT/platformio.ini"
+                else
+                    echo "board = $board_id" >> "$PROJECT/platformio.ini"
+                fi
                 echo -e "${C_GREEN}Board updated to ${C_YELLOW}$board_id${C_RESET} in platformio.ini"
             else
-                echo -e "${C_RED}Failed to update platformio.ini${C_RESET}"
+                echo -e "${C_RED}platformio.ini not found in $PROJECT${C_RESET}"
             fi
             press_enter_to_continue
         fi
