@@ -48,9 +48,10 @@ function upload_sketch() {
         fi
     fi
 
-    # 1.5 Create backup before upload
-    echo -e "${C_CYAN}Creating backup before upload...${C_RESET}"
-    backup_project "$project_to_upload"
+    # 1.5 Stage backup before upload (retention only advances on successful upload)
+    echo -e "${C_CYAN}Staging backup before upload...${C_RESET}"
+    local staged_backup=""
+    staged_backup=$(stage_project_backup "$project_to_upload")
     echo ""
 
     local upload_port
@@ -79,6 +80,7 @@ function upload_sketch() {
         fi
         
         if [[ "$success" == false ]]; then
+            discard_project_backup "$staged_backup"
             echo -e "${C_RED}Error: Compilation failed. Please check the output above.${C_RESET}"
             press_enter_to_continue
             return
@@ -88,6 +90,7 @@ function upload_sketch() {
         echo -e "${C_GREEN}==> Performing OTA upload to ${C_YELLOW}${upload_port}${C_RESET}...${C_RESET}"
         success=false
         if [[ "$ptype" == "espidf" ]]; then
+            discard_project_backup "$staged_backup"
             echo -e "${C_RED}ESP-IDF does not support network IP upload via 'idf.py flash'.${C_RESET}"
             echo -e "${C_YELLOW}Please use a serial port (e.g. /dev/ttyUSB0) or a custom OTA script for ESP-IDF.${C_RESET}"
             press_enter_to_continue
@@ -99,6 +102,7 @@ function upload_sketch() {
         fi
         
         if [[ "$success" == false ]]; then
+            discard_project_backup "$staged_backup"
             echo -e "${C_RED}Error: OTA upload failed. Please check the output above.${C_RESET}"
             echo -e "${C_YELLOW}Make sure the device is powered on and connected to the network.${C_RESET}"
             echo -e "${C_YELLOW}Also verify that OTA is enabled in your sketch.${C_RESET}"
@@ -120,6 +124,7 @@ function upload_sketch() {
                 if [[ -n "$manual_port" ]]; then
                     upload_port="$manual_port"
                 else
+                    discard_project_backup "$staged_backup"
                     echo -e "${C_RED}No port specified. Cannot upload.${C_RESET}"
                     press_enter_to_continue
                     return
@@ -141,7 +146,9 @@ function upload_sketch() {
                     local -a options=()
                     while IFS= read -r line; do [[ -n "$line" ]] && options+=("$line"); done <<< "$board_list"
                     select opt in "${options[@]}" "Cancel"; do
-                        if [[ "$opt" == "Cancel" ]]; then return 1;
+                        if [[ "$opt" == "Cancel" ]]; then
+                            discard_project_backup "$staged_backup"
+                            return 1;
                         elif [[ -n "$opt" ]]; then
                             choice="$opt"
                             break
@@ -152,6 +159,7 @@ function upload_sketch() {
                 if [[ -n "$choice" ]]; then
                     upload_port=$(echo "$choice" | awk '{print $1}')
                 else
+                    discard_project_backup "$staged_backup"
                     echo -e "${C_RED}No selection made. Aborting upload.${C_RESET}"
                     press_enter_to_continue
                     return
@@ -180,6 +188,7 @@ function upload_sketch() {
         fi
         
         if [[ "$success" == false ]]; then
+            discard_project_backup "$staged_backup"
             echo -e "${C_RED}Error: Upload failed. Please check the output above.${C_RESET}"
             press_enter_to_continue
             return
@@ -190,6 +199,9 @@ function upload_sketch() {
     PORT="$upload_port"
     save_config  # Save the successful configuration
     
+    # Commit staged backup now that upload succeeded
+    commit_project_backup "$project_to_upload" "$staged_backup"
+
     echo -e "${C_GREEN}Sketch '${project_to_upload##*/}' uploaded successfully!${C_RESET}"
     log_operation "UPLOAD" "SUCCESS" "${project_to_upload##*/} to $upload_port"
     press_enter_to_continue
