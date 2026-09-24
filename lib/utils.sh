@@ -119,21 +119,52 @@ function check_for_update() {
     fi
 }
 
-# --- Backup Function ---
-function backup_project() {
+# --- Backup Functions ---
+function stage_project_backup() {
     local project_path="$1"
+    local project_name=$(basename "$project_path")
+    local staging_dir="${TMPDIR:-/tmp}/anodemcu_staging"
+    mkdir -p "$staging_dir"
+    local temp_file
+    temp_file=$(mktemp "$staging_dir/${project_name}_stage.XXXXXX.tar.gz" 2>/dev/null || mktemp "/tmp/${project_name}_stage.XXXXXX.tar.gz" 2>/dev/null)
+
+    if [[ -z "$temp_file" ]]; then
+        return 1
+    fi
+
+    if tar -czf "$temp_file" -C "$(dirname "$project_path")" "$project_name" 2>/dev/null; then
+        echo "$temp_file"
+        return 0
+    else
+        rm -f "$temp_file"
+        return 1
+    fi
+}
+
+function discard_project_backup() {
+    local staged_file="$1"
+    if [[ -n "$staged_file" && -f "$staged_file" ]]; then
+        rm -f "$staged_file"
+    fi
+}
+
+function commit_project_backup() {
+    local project_path="$1"
+    local staged_file="$2"
     local project_name=$(basename "$project_path")
     local timestamp=$(date +%Y%m%d_%H%M%S)
     local project_backup_dir="$BACKUP_DIR/$project_name"
     local backup_path="$project_backup_dir/${project_name}_${timestamp}.tar.gz"
-    
+
+    if [[ -z "$staged_file" || ! -f "$staged_file" ]]; then
+        return 1
+    fi
+
     mkdir -p "$project_backup_dir"
-    
-    echo -e "${C_CYAN}Creating backup of '$project_name'...${C_RESET}"
-    if tar -czf "$backup_path" -C "$(dirname "$project_path")" "$project_name" 2>/dev/null; then
-        echo -e "${C_GREEN}Backup created: $backup_path${C_RESET}"
+    if mv "$staged_file" "$backup_path" 2>/dev/null; then
+        echo -e "${C_GREEN}Backup saved: $backup_path${C_RESET}"
         
-        # Keep only last 5 backups for this specific project
+        # Advance retention: keep only last 5 backups for this specific project
         local backup_count=$(ls -t "$project_backup_dir"/*.tar.gz 2>/dev/null | wc -l)
         if [[ $backup_count -gt 5 ]]; then
             ls -t "$project_backup_dir"/*.tar.gz | tail -n +6 | xargs -r rm -f
@@ -141,6 +172,24 @@ function backup_project() {
         fi
         log_operation "BACKUP" "SUCCESS" "$project_name"
         return 0
+    else
+        rm -f "$staged_file"
+        echo -e "${C_YELLOW}Warning: Could not save backup archive${C_RESET}"
+        log_operation "BACKUP" "FAILED" "$project_name"
+        return 1
+    fi
+}
+
+function backup_project() {
+    local project_path="$1"
+    local project_name=$(basename "$project_path")
+    
+    echo -e "${C_CYAN}Creating backup of '$project_name'...${C_RESET}"
+    local staged_file
+    staged_file=$(stage_project_backup "$project_path")
+    if [[ $? -eq 0 && -n "$staged_file" ]]; then
+        commit_project_backup "$project_path" "$staged_file"
+        return $?
     else
         echo -e "${C_YELLOW}Warning: Could not create backup${C_RESET}"
         log_operation "BACKUP" "FAILED" "$project_name"
