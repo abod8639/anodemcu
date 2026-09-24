@@ -49,7 +49,7 @@ setup() {
     backup_project "$test_project"
     
     # Verify backup exists
-    local backup_count=$(ls -1 "$BACKUP_DIR"/test_project1_*.tar.gz 2>/dev/null | wc -l)
+    local backup_count=$(find "$BACKUP_DIR" -name "test_project1_*.tar.gz" 2>/dev/null | wc -l)
     [ "$backup_count" -ge 1 ]
     
     # Verify log entry
@@ -79,6 +79,9 @@ setup() {
     # Utils functions
     assert_function_exists "check_dependencies"
     assert_function_exists "backup_project"
+    assert_function_exists "stage_project_backup"
+    assert_function_exists "discard_project_backup"
+    assert_function_exists "commit_project_backup"
     assert_function_exists "log_operation"
     
     # UI functions
