@@ -345,12 +345,58 @@ function edit_project_nvim() {
 
     local project_name
     project_name=$(basename "$PROJECT")
+    local ptype
+    ptype=$(detect_project_type "$PROJECT")
+
+    local target_file=""
+    if [[ "$ptype" == "espidf" ]]; then
+        if [[ -f "$PROJECT/main/main.c" ]]; then
+            target_file="main/main.c"
+        elif [[ -f "$PROJECT/main/main.cpp" ]]; then
+            target_file="main/main.cpp"
+        elif compgen -G "$PROJECT/main/*.c" > /dev/null 2>&1; then
+            local first_c
+            first_c=$(ls "$PROJECT/main/"*.c 2>/dev/null | head -n 1)
+            target_file="${first_c#$PROJECT/}"
+        elif compgen -G "$PROJECT/main/*.cpp" > /dev/null 2>&1; then
+            local first_cpp
+            first_cpp=$(ls "$PROJECT/main/"*.cpp 2>/dev/null | head -n 1)
+            target_file="${first_cpp#$PROJECT/}"
+        fi
+    elif [[ "$ptype" == "platformio" ]]; then
+        if [[ -f "$PROJECT/src/main.cpp" ]]; then
+            target_file="src/main.cpp"
+        elif [[ -f "$PROJECT/src/main.c" ]]; then
+            target_file="src/main.c"
+        elif compgen -G "$PROJECT/src/*.cpp" > /dev/null 2>&1; then
+            local first_cpp
+            first_cpp=$(ls "$PROJECT/src/"*.cpp 2>/dev/null | head -n 1)
+            target_file="${first_cpp#$PROJECT/}"
+        elif compgen -G "$PROJECT/src/*.c" > /dev/null 2>&1; then
+            local first_c
+            first_c=$(ls "$PROJECT/src/"*.c 2>/dev/null | head -n 1)
+            target_file="${first_c#$PROJECT/}"
+        fi
+    else
+        # Arduino
+        if [[ -f "$PROJECT/${project_name}.ino" ]]; then
+            target_file="${project_name}.ino"
+        elif compgen -G "$PROJECT/*.ino" > /dev/null 2>&1; then
+            local first_ino
+            first_ino=$(ls "$PROJECT/"*.ino 2>/dev/null | head -n 1)
+            target_file="${first_ino#$PROJECT/}"
+        fi
+    fi
 
     echo -e "${C_GREEN}==> Opening project '${project_name}' in nvim...${C_RESET}"
     
-    # Change to the project directory and open the main .ino file
     (
-        cd "$PROJECT" && nvim "${project_name}.ino"
+        cd "$PROJECT" || exit 1
+        if [[ -n "$target_file" && -f "$target_file" ]]; then
+            nvim "$target_file"
+        else
+            nvim .
+        fi
     )
     
     echo # Add a newline for better formatting after nvim exits
