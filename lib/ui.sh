@@ -46,9 +46,31 @@ function print_header() {
                  esac
                  printf " ${C_SHORTCUT}%-12s${C_RESET} %b\\n" "Platform:" "$ptype_lbl"
                  
-                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Board:"   "${FQBN:-   $DEFAULT_FQBN}"
-                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-   $DEFAULT_PORT}"
-                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Baud:"    "${BAUD:-   $DEFAULT_BAUD}"
+                 local board_display="${FQBN:-$DEFAULT_FQBN}"
+                 if [[ "$ptype" == "platformio" ]]; then
+                     if [[ -f "$PROJECT/platformio.ini" ]]; then
+                         local pio_board
+                         pio_board=$(grep -E "^board *=" "$PROJECT/platformio.ini" 2>/dev/null | head -n 1 | awk -F'=' '{print $2}' | tr -d ' ')
+                         if [[ -n "$pio_board" ]]; then
+                             board_display="$pio_board"
+                         else
+                             board_display="Not specified"
+                         fi
+                     fi
+                 elif [[ "$ptype" == "espidf" ]]; then
+                     if [[ -f "$PROJECT/.anodemcu.target" ]]; then
+                         board_display=$(cat "$PROJECT/.anodemcu.target" 2>/dev/null | tr -d '[:space:]')
+                     elif [[ -f "$PROJECT/sdkconfig" ]]; then
+                         local idf_target
+                         idf_target=$(grep "CONFIG_IDF_TARGET=" "$PROJECT/sdkconfig" 2>/dev/null | cut -d'"' -f2)
+                         [[ -n "$idf_target" ]] && board_display="$idf_target" || board_display="esp32"
+                     else
+                         board_display="esp32"
+                     fi
+                 fi
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Board:"   "$board_display"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Port:"    "${PORT:-$DEFAULT_PORT}"
+                 printf " ${C_SHORTCUT}%-12s${C_RESET} %s\\n" "Baud:"    "${BAUD:-$DEFAULT_BAUD}"
                  echo "────────────────────────────────────────────────────────────"
 }
 
