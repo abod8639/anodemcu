@@ -73,7 +73,7 @@ setup() {
     run backup_project "$test_project"
     
     # Check if backup was created
-    local backup_count=$(ls -1 "$BACKUP_DIR"/test_project1_*.tar.gz 2>/dev/null | wc -l)
+    local backup_count=$(find "$BACKUP_DIR" -name "test_project1_*.tar.gz" 2>/dev/null | wc -l)
     [ "$backup_count" -ge 1 ]
 }
 
@@ -87,8 +87,27 @@ setup() {
     done
     
     # Should only have 5 backups
-    local backup_count=$(ls -1 "$BACKUP_DIR"/test_project1_*.tar.gz 2>/dev/null | wc -l)
+    local backup_count=$(find "$BACKUP_DIR" -name "test_project1_*.tar.gz" 2>/dev/null | wc -l)
     [ "$backup_count" -eq 5 ]
+}
+
+@test "staged backup discarded on failed attempt preserves existing backups" {
+    local test_project="$SKETCH_DIR/test_project1"
+    
+    backup_project "$test_project"
+    local initial_count=$(find "$BACKUP_DIR" -name "test_project1_*.tar.gz" 2>/dev/null | wc -l)
+    [ "$initial_count" -eq 1 ]
+    
+    # Simulate 5 failed upload attempts
+    for i in {1..5}; do
+        local staged
+        staged=$(stage_project_backup "$test_project")
+        discard_project_backup "$staged"
+    done
+    
+    # Retention was NOT advanced, initial backup remains untouched
+    local count_after_fails=$(find "$BACKUP_DIR" -name "test_project1_*.tar.gz" 2>/dev/null | wc -l)
+    [ "$count_after_fails" -eq 1 ]
 }
 
 @test "log_operation creates log file" {
