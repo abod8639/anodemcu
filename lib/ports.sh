@@ -94,38 +94,53 @@ function open_serial() {
     print_header
     echo -e "${C_GREEN}==> Opening Serial Monitor...${C_RESET}"
 
-    # 1. Detect and select port
-    local board_list
-    board_list=$(run_arduino_cli_command board list | awk 'NR>1')
-
-    if [ -z "$board_list" ]; then
-        echo -e "${C_RED}No connected boards found. Cannot open serial monitor.${C_RESET}"
-        press_enter_to_continue
-        return
-    fi
-
-    local selected_port=""
+    local selected_port="${PORT:-}"
     
-    # If only one board is connected, use it automatically
-    if [ "$(echo "$board_list" | wc -l)" -eq 1 ]; then
-        selected_port=$(echo "$board_list" | awk '{print $1}')
-        echo -e "${C_GREEN}Auto-selected port: ${C_YELLOW}${selected_port}${C_RESET}"
-        PORT="$selected_port" # Update global state
-    else
-        # If multiple boards, let the user choose
-        echo -e "${C_YELLOW}Multiple boards detected. Please select one:${C_RESET}"
-        local choice
-        choice=$( (echo "$board_list") | \
-            fzf --reverse --header="Select a board/port to monitor" --prompt="Selection: "
-        )
+    if [[ -z "$selected_port" ]]; then
+        local board_list
+        board_list=$(run_arduino_cli_command board list | awk 'NR>1')
+        board_list=$(echo "$board_list" | sed '/^[[:space:]]*$/d')
 
-        if [[ -n "$choice" ]]; then
-            selected_port=$(echo "$choice" | awk '{print $1}')
-            PORT="$selected_port" # Update global state
+        if [ -z "$board_list" ]; then
+            echo -e "${C_YELLOW}No auto-detected boards found.${C_RESET}"
+            read -rp "Enter port to monitor (e.g. /dev/ttyUSB0, /dev/ttyACM0): " manual_port
+            if [[ -n "$manual_port" ]]; then
+                selected_port="$manual_port"
+                PORT="$selected_port"
+                save_config
+            else
+                echo -e "${C_RED}No port specified. Cannot open serial monitor.${C_RESET}"
+                press_enter_to_continue
+                return
+            fi
+        elif [ "$(echo "$board_list" | wc -l)" -eq 1 ]; then
+            selected_port=$(echo "$board_list" | awk '{print $1}')
+            echo -e "${C_GREEN}Auto-selected port: ${C_YELLOW}${selected_port}${C_RESET}"
+            PORT="$selected_port"
+            save_config
         else
-            echo -e "${C_RED}No selection made. Aborting.${C_RESET}"
-            press_enter_to_continue
-            return
+            echo -e "${C_YELLOW}Multiple boards detected. Please select one:${C_RESET}"
+            local choice
+            if command -v fzf &> /dev/null; then
+                choice=$(echo "$board_list" | fzf --reverse --header="Select a board/port to monitor" --prompt="Selection: ")
+            else
+                local -a options=()
+                while IFS= read -r line; do [[ -n "$line" ]] && options+=("$line"); done <<< "$board_list"
+                select opt in "${options[@]}" "Cancel"; do
+                    if [[ "$opt" == "Cancel" ]]; then return;
+                    elif [[ -n "$opt" ]]; then choice="$opt"; break; fi
+                done
+            fi
+
+            if [[ -n "$choice" ]]; then
+                selected_port=$(echo "$choice" | awk '{print $1}')
+                PORT="$selected_port"
+                save_config
+            else
+                echo -e "${C_RED}No selection made. Aborting.${C_RESET}"
+                press_enter_to_continue
+                return
+            fi
         fi
     fi
 
@@ -202,12 +217,21 @@ function open_serial() {
     fi
 
     # 3. Open monitor
-    echo -e "${C_GREEN}==> Opening Serial Monitor on port ${PORT} at ${BAUD} baud...${C_RESET}"
+    local ptype
+    ptype=$(detect_project_type "$PROJECT")
+    local active_baud="${BAUD:-$DEFAULT_BAUD}"
+
+    echo -e "${C_GREEN}==> Opening Serial Monitor on port ${PORT} at ${active_baud} baud (${ptype})...${C_RESET}"
     echo -e "${C_YELLOW}(Press Ctrl+C to exit)${C_RESET}"
     sleep 1
 
-    # Execute monitor directly for interactive session
-    arduino-cli monitor -p "${PORT}" --config "baudrate=${BAUD}"
+    if [[ "$ptype" == "espidf" ]]; then
+        (cd "$PROJECT" && run_idf_command -p "${PORT}" -b "${active_baud}" monitor)
+    elif [[ "$ptype" == "platformio" ]]; then
+        (cd "$PROJECT" && pio device monitor -p "${PORT}" -b "${active_baud}")
+    else
+        arduino-cli monitor -p "${PORT}" --config "baudrate=${active_baud}"
+    fi
     
     echo # Add a newline for better formatting after monitor exits
     press_enter_to_continue
