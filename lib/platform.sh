@@ -109,7 +109,7 @@ function run_idf_command() {
                 if command -v idf.py &> /dev/null; then
                     idf.py "${cmd[@]}"
                 else
-                    return 127
+                    exit 127
                 fi
             )
             return $?
