@@ -88,8 +88,10 @@ function upload_sketch() {
         echo -e "${C_GREEN}==> Performing OTA upload to ${C_YELLOW}${upload_port}${C_RESET}...${C_RESET}"
         success=false
         if [[ "$ptype" == "espidf" ]]; then
-            echo -e "${C_YELLOW}Note: ESP-IDF OTA might require custom espota.py integration.${C_RESET}"
-            if (cd "$project_to_upload" && run_idf_command -p "$upload_port" flash); then success=true; fi
+            echo -e "${C_RED}ESP-IDF does not support network IP upload via 'idf.py flash'.${C_RESET}"
+            echo -e "${C_YELLOW}Please use a serial port (e.g. /dev/ttyUSB0) or a custom OTA script for ESP-IDF.${C_RESET}"
+            press_enter_to_continue
+            return
         elif [[ "$ptype" == "platformio" ]]; then
             if (cd "$project_to_upload" && pio run -t upload --upload-port "$upload_port"); then success=true; fi
         else
@@ -105,52 +107,58 @@ function upload_sketch() {
         fi
 
     else
-        # Regular USB upload - detect and select port
-        echo -e "${C_GREEN}==> Detecting connected boards for upload...${C_RESET}"
-        local board_list
-        board_list=$(run_arduino_cli_command board list | awk 'NR>1')
+        # Regular USB/Serial upload
+        if [[ -z "$upload_port" ]]; then
+            echo -e "${C_GREEN}==> Detecting connected boards for upload...${C_RESET}"
+            local board_list
+            board_list=$(run_arduino_cli_command board list | awk 'NR>1')
+            board_list=$(echo "$board_list" | sed '/^[[:space:]]*$/d')
 
-        # Filter out empty lines
-        board_list=$(echo "$board_list" | sed '/^[[:space:]]*$/d')
+            if [ -z "$board_list" ]; then
+                echo -e "${C_YELLOW}No auto-detected boards found.${C_RESET}"
+                read -rp "Enter upload port (e.g. /dev/ttyUSB0, /dev/ttyACM0): " manual_port
+                if [[ -n "$manual_port" ]]; then
+                    upload_port="$manual_port"
+                else
+                    echo -e "${C_RED}No port specified. Cannot upload.${C_RESET}"
+                    press_enter_to_continue
+                    return
+                fi
+            elif [ "$(echo "$board_list" | wc -l)" -eq 1 ]; then
+                upload_port=$(echo "$board_list" | awk '{print $1}')
+                echo -e "${C_GREEN}Auto-selected port: ${C_YELLOW}${upload_port}${C_RESET}"
+            else
+                echo -e "${C_YELLOW}Multiple ports detected. Please select one for upload:${C_RESET}"
+                
+                local choice
+                if command -v fzf &> /dev/null; then
+                    choice=$(echo "$board_list" | \
+                        fzf --height=50% --reverse --header="Use arrows to move, Enter to select" \
+                            --prompt="Select port > " --ansi )
+                else
+                    echo -e "${C_YELLOW}Tip: Install 'fzf' for a better selection experience.${C_RESET}"
+                    echo -e "${C_GREEN}==> Available ports:${C_RESET}"
+                    local -a options=()
+                    while IFS= read -r line; do [[ -n "$line" ]] && options+=("$line"); done <<< "$board_list"
+                    select opt in "${options[@]}" "Cancel"; do
+                        if [[ "$opt" == "Cancel" ]]; then return 1;
+                        elif [[ -n "$opt" ]]; then
+                            choice="$opt"
+                            break
+                        fi
+                    done
+                fi
 
-        if [ -z "$board_list" ]; then
-            echo -e "${C_RED}No connected boards found. Cannot upload.${C_RESET}"
-            press_enter_to_continue
-            return
-        fi
-    
-        if [ "$(echo "$board_list" | wc -l)" -eq 1 ]; then
-            upload_port=$(echo "$board_list" | awk '{print $1}')
-            echo -e "${C_GREEN}Auto-selected port: ${C_YELLOW}${upload_port}${C_RESET}"
+                if [[ -n "$choice" ]]; then
+                    upload_port=$(echo "$choice" | awk '{print $1}')
+                else
+                    echo -e "${C_RED}No selection made. Aborting upload.${C_RESET}"
+                    press_enter_to_continue
+                    return
+                fi
+            fi
         else
-            echo -e "${C_YELLOW}Multiple ports detected. Please select one for upload:${C_RESET}"
-            
-            local choice
-            if command -v fzf &> /dev/null; then
-                choice=$(echo "$board_list" | \
-                    fzf --height=50% --reverse --header="Use arrows to move, Enter to select" \
-                        --prompt="Select port > " --ansi )
-            else
-                echo -e "${C_YELLOW}Tip: Install 'fzf' for a better selection experience.${C_RESET}"
-                echo -e "${C_GREEN}==> Available ports:${C_RESET}"
-                local -a options=()
-                while IFS= read -r line; do [[ -n "$line" ]] && options+=("$line"); done <<< "$board_list"
-                select opt in "${options[@]}" "Cancel"; do
-                    if [[ "$opt" == "Cancel" ]]; then return 1;
-                    elif [[ -n "$opt" ]]; then
-                        choice="$opt"
-                        break
-                    fi
-                done
-            fi
-
-            if [[ -n "$choice" ]]; then
-                upload_port=$(echo "$choice" | awk '{print $1}')
-            else
-                echo -e "${C_RED}No selection made. Aborting upload.${C_RESET}"
-                press_enter_to_continue
-                return
-            fi
+            echo -e "${C_GREEN}Using configured port: ${C_YELLOW}${upload_port}${C_RESET}"
         fi
         
         # Use currently configured FQBN or default
