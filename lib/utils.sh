@@ -124,18 +124,19 @@ function backup_project() {
     local project_path="$1"
     local project_name=$(basename "$project_path")
     local timestamp=$(date +%Y%m%d_%H%M%S)
-    local backup_path="$BACKUP_DIR/${project_name}_${timestamp}.tar.gz"
+    local project_backup_dir="$BACKUP_DIR/$project_name"
+    local backup_path="$project_backup_dir/${project_name}_${timestamp}.tar.gz"
     
-    mkdir -p "$BACKUP_DIR"
+    mkdir -p "$project_backup_dir"
     
     echo -e "${C_CYAN}Creating backup of '$project_name'...${C_RESET}"
     if tar -czf "$backup_path" -C "$(dirname "$project_path")" "$project_name" 2>/dev/null; then
         echo -e "${C_GREEN}Backup created: $backup_path${C_RESET}"
         
-        # Keep only last 5 backups per project
-        local backup_count=$(ls -t "$BACKUP_DIR/${project_name}"_*.tar.gz 2>/dev/null | wc -l)
+        # Keep only last 5 backups for this specific project
+        local backup_count=$(ls -t "$project_backup_dir"/*.tar.gz 2>/dev/null | wc -l)
         if [[ $backup_count -gt 5 ]]; then
-            ls -t "$BACKUP_DIR/${project_name}"_*.tar.gz | tail -n +6 | xargs -r rm
+            ls -t "$project_backup_dir"/*.tar.gz | tail -n +6 | xargs -r rm -f
             echo -e "${C_YELLOW}Cleaned up old backups (keeping last 5)${C_RESET}"
         fi
         log_operation "BACKUP" "SUCCESS" "$project_name"
