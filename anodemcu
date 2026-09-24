@@ -66,8 +66,11 @@ function main_menu() {
         echo -e " ${C_CYAN}(H)${C_RESET} Help"
         
         local update_prompt=""
-        if [[ -n "$LATEST_VERSION" && "$LATEST_VERSION" != "$VERSION" ]]; then
-            update_prompt="(${C_YELLOW}V${C_RESET}) Update to v$LATEST_VERSION"
+        if [[ -n "$LATEST_VERSION" ]]; then
+            vercmp_portable "${LATEST_VERSION#v}" "${VERSION#v}"
+            if [[ $? -eq 1 ]]; then
+                update_prompt="(${C_YELLOW}V${C_RESET}) Update to v$LATEST_VERSION"
+            fi
         fi
         
         echo -e " ${update_prompt}${update_prompt:+, }(${C_RED}Q${C_RESET}) Quit"
@@ -112,7 +115,12 @@ function main_menu() {
             [hH]) show_help ;;
 
             [vV]) 
-                if [[ -n "$LATEST_VERSION" && "$LATEST_VERSION" != "$VERSION" ]]; then
+                local is_newer=false
+                if [[ -n "$LATEST_VERSION" ]]; then
+                    vercmp_portable "${LATEST_VERSION#v}" "${VERSION#v}"
+                    [[ $? -eq 1 ]] && is_newer=true
+                fi
+                if [[ "$is_newer" == true ]]; then
                     update_script
                 else
                     echo -e "${C_RED}Invalid option.${C_RESET}"; sleep 1
@@ -148,8 +156,10 @@ if [[ -n "$1" ]]; then
         sleep 2
     fi
 elif [[ "$(detect_project_type "$(pwd)")" != "unknown" ]]; then
-    PROJECT="$(pwd)"
-    add_to_history "$PROJECT"
+    if [[ "$(pwd)" != "$SCRIPT_DIR" ]]; then
+        PROJECT="$(pwd)"
+        add_to_history "$PROJECT"
+    fi
 fi
 
 resolve_project_type_ambiguity "$PROJECT"
